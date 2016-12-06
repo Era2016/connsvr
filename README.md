@@ -53,6 +53,20 @@ callback: jsonp回调函数，[可选]
 示例如下: cb({"body":["hello world"],"cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
 ```
 
+test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
+1. 首先配置host: 127.0.0.1 connsvr.com
+2. 启动connsvr: ./connsvr -env dev
+3. 浏览器里打开ajax.html
+4. 运行包含push消息的测试用例：go test -env dev -v -run=TestTcp
+经过上面几步，浏览器内容会更新成如下：
+```
+{"body":"hello world","cmd":"99","ext":"{\"GetMsgKind\":2}","rid":"r1","sid":"0.3209966821165452","subcmd":"0","uid":"u1"}
+
+refresh time: 上午2:05:59
+```
+重复运行测试用例，你能看到消息在更新(refresh time显示的时间在变）
+ 
+
 * tcp自定义协议长连接（包括收包，回包）
 ```
 Sbyte+Length+Cmd+Subcmd+UidLen+Uid+SidLen+Sid+RidLen+Rid+BodyLen+Body+ExtLen+Ext+Ebyte

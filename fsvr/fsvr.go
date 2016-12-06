@@ -72,7 +72,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		room.RM.Del(msg.Rid(), connWrap)
 		return true
 	case comm.PUB:
-		clog.Debug("dispatchCmd() comm.PUSH: %+v", msg)
+		clog.Debug("dispatchCmd() comm.PUB: %+v", msg)
 
 		subcmd := strconv.Itoa(int(msg.Subcmd()))
 		pub := conf.C.Pubs[subcmd]
