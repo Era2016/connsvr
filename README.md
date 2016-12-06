@@ -54,6 +54,7 @@ callback: jsonp回调函数，[可选]
 ```
 
 test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
+
 1. 首先配置host: 127.0.0.1 connsvr.com
 2. 启动connsvr: ./connsvr -env dev
 3. 浏览器里打开ajax.html
@@ -64,7 +65,7 @@ test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
 
 refresh time: 上午2:05:59
 ```
-重复运行测试用例，你能看到消息在更新(refresh time显示的时间在变）
+`重复运行测试用例，你能看到消息在更新(refresh time显示的时间在变）`
  
 
 * tcp自定义协议长连接（包括收包，回包）
