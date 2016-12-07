@@ -53,6 +53,22 @@ callback: jsonp回调函数，[可选]
 示例如下: cb({"body":["hello world"],"cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
 ```
 
+```
+** 上行消息 **
+http://xxx.xxx.com/pub?rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+请求参数说明:
+rid: 房间号
+uid: 用户id
+sid: session_id，区分同一uid不同连接，[可选]
+subcmd: 用于区分不同业务，有效数据：1~255之间
+body: 客户端上传内容
+callback: jsonp回调函数，[可选]
+
+返回数据说明：
+[callback(][json body][)]
+示例如下: cb({"body":"","cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+```
+
 > test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
   1. 首先配置host: 127.0.0.1 connsvr.com
   2. 启动connsvr: ./connsvr -env dev

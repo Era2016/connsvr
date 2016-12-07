@@ -13,9 +13,9 @@ import (
 	"testing"
 )
 
-func TestPub(t *testing.T) {
+func TestTcpPub(t *testing.T) {
 	rid := "r1"
-	uid := "u_TestPub"
+	uid := "u_TestTcpPub"
 	text := "hello world"
 
 	conn, err := net.Dial(
