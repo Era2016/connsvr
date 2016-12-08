@@ -51,6 +51,7 @@ type Stat struct {
 type Msgs []*struct {
 	MsgId string
 	Uid   string
+	Sid   string
 	Body  string
 }
 

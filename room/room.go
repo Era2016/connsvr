@@ -28,6 +28,7 @@ type MsgElem struct {
 	id   string
 	body string
 	uid  string
+	sid  string
 }
 
 type MsgList []*MsgElem
@@ -51,6 +52,7 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 		id:   id,
 		body: msg.Body(),
 		uid:  msg.Uid(),
+		sid:  msg.Sid(),
 	}
 	i := sort.Search(len(a), func(i int) bool { return a[i].id >= id })
 	if i == len(a) {
@@ -141,6 +143,7 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (strs string) {
 				id:   m.MsgId,
 				body: m.Body,
 				uid:  m.Uid,
+				sid:  m.Sid,
 			})
 		}
 
@@ -157,8 +160,14 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (strs string) {
 	for _, e := range a[i:] {
 		// 过滤掉自己的消息，但当客户端传入id为空时（客户端无缓存消息），不用过滤
 		if id != "" {
-			if e.uid == msg.Uid() {
-				continue
+			if e.sid == "" { // 当后端没有传入sid时，只匹配uid
+				if e.uid == msg.Uid() {
+					continue
+				}
+			} else {
+				if e.uid == msg.Uid() && e.sid == msg.Sid() {
+					continue
+				}
 			}
 		}
 		bodys = append(bodys, e.body)
