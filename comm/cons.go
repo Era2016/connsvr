@@ -18,9 +18,9 @@ const (
 type GET_MSG_KIND byte
 
 const (
-	NOTIFY GET_MSG_KIND = iota + 1 // 1
-	DISPLAY
-	CONNDATA
+	NOTIFY   GET_MSG_KIND = iota + 1 // 推送通知，然后客户端主动拉后端服务
+	DISPLAY                          // 推送整条消息，客户端不用拉
+	CONNDATA                         // 推送通知，然后客户端来connsvr拉消息
 )
 
 type PROTO int
@@ -55,7 +55,7 @@ type Msgs []*struct {
 	Body  string
 }
 
-// ServExt is from remote conf
+// ServExt will be transfered to client
 type ServExt struct {
 	GetMsgKind GET_MSG_KIND
 }

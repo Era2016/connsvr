@@ -70,8 +70,9 @@ type Conf struct {
 
 type Var struct {
 	a          atomic.Value
-	GetMsgKind comm.GET_MSG_KIND // 1: 推送通知，然后客户端主动拉后端服务  2: 推送整条消息，客户端不用拉 3: 推送通知，然后客户端来connsvr拉消息
-	ConnMsgNum int               // connsvr服务缓存消息最大长度，在GetMsgKind参数为3时有效
+	GetMsgKind comm.GET_MSG_KIND
+	Room2Kind  map[string]comm.GET_MSG_KIND // 房间拉消息方式单独配置
+	ConnMsgNum int                          // connsvr服务缓存消息最大长度，在GetMsgKind参数为3时有效
 }
 
 func (v *Var) Get() *Var {
@@ -100,6 +101,10 @@ func remoteConf() {
 		ConnMsgNum: 20,
 	}
 	V.Set(V)
+
+	if C.VarHost == nil {
+		return
+	}
 
 	go func() {
 		for {

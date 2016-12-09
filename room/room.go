@@ -41,12 +41,22 @@ func (a MsgList) Key4Lc(rid string) string {
 	return "conn:msgs:" + rid
 }
 
-func (a MsgList) Append(id string, msg proto.Msg) {
-	key_lc := a.Key4Lc(msg.Rid())
-	a_lc, _ := lc.Get(key_lc)
+func (a MsgList) GetLc(rid string) (MsgList, bool) {
+	key_lc := a.Key4Lc(rid)
+	a_lc, ok := lc.Get(key_lc)
 	if a_lc != nil {
 		a = a_lc.(MsgList)
 	}
+	return a, ok
+}
+
+func (a MsgList) SetLc(rid string) {
+	key_lc := a.Key4Lc(rid)
+	lc.Set(key_lc, a, time.Minute)
+}
+
+func (a MsgList) Append(id string, msg proto.Msg) {
+	a, _ = a.GetLc(msg.Rid())
 
 	x := &MsgElem{
 		id:   id,
@@ -68,7 +78,7 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 		a = a[len(a)-n:]
 	}
 
-	lc.Set(key_lc, a, time.Hour)
+	a.SetLc(msg.Rid())
 }
 
 // 请赋值成自己的根据addrType, addr返回ip:port的函数
@@ -76,12 +86,8 @@ var MsgAddrFunc = func(addrType, addr string) (string, error) {
 	return addr, nil
 }
 
-func (a MsgList) Bodys(id string, msg proto.Msg) (strs string) {
-	key_lc := a.Key4Lc(msg.Rid())
-	a_lc, ok := lc.Get(key_lc)
-	if a_lc != nil {
-		a = a_lc.(MsgList)
-	}
+func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
+	a, ok := a.GetLc(msg.Rid())
 
 	// 但connsvr缓存消息为空时，路由到后端服务拉取数据
 	if len(a) == 0 && !ok {
@@ -152,11 +158,10 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (strs string) {
 			a = append(a, &MsgElem{})
 		}
 
-		lc.Set(key_lc, a, time.Hour)
+		a.SetLc(msg.Rid())
 	}
 
 	i := sort.Search(len(a), func(i int) bool { return a[i].id > id })
-	var bodys []string
 	for _, e := range a[i:] {
 		// 过滤掉自己的消息，但当客户端传入id为空时（客户端无缓存消息），不用过滤
 		if id != "" {
@@ -172,9 +177,6 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (strs string) {
 		}
 		bodys = append(bodys, e.body)
 	}
-	bs, _ := json.Marshal(bodys)
-	strs = string(bs)
-
 	return
 }
 
@@ -251,10 +253,13 @@ func (roomMap *RoomMap) proc(i int) {
 				break
 			}
 
-			ext := &comm.ServExt{
+			servExt := &comm.ServExt{
 				GetMsgKind: conf.V.Get().GetMsgKind,
 			}
-			ext_bs, _ := json.Marshal(ext)
+			if kind, ok := conf.V.Get().Room2Kind[rid]; ok {
+				servExt.GetMsgKind = kind
+			}
+			ext_bs, _ := json.Marshal(servExt)
 
 			btime := time.Now()
 			ukey_ex := [2]string{m.Uid(), m.Sid()}
@@ -280,7 +285,7 @@ func (roomMap *RoomMap) proc(i int) {
 				msg.SetUid(connWrap.Uid)
 				msg.SetSid(connWrap.Sid)
 				msg.SetRid(m.Rid())
-				if ext.GetMsgKind == comm.DISPLAY {
+				if servExt.GetMsgKind == comm.DISPLAY {
 					msg.SetBody(m.Body())
 				}
 				msg.SetExt(string(ext_bs))

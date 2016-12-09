@@ -1,6 +1,7 @@
 package fsvr
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
@@ -72,8 +73,6 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		room.RM.Del(msg.Rid(), connWrap)
 		return true
 	case comm.PUB:
-		clog.Debug("dispatchCmd() comm.PUB: %+v", msg)
-
 		subcmd := strconv.Itoa(int(msg.Subcmd()))
 		pub := conf.C.Pubs[subcmd]
 		if pub == nil {
@@ -144,11 +143,10 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		connWrap.Write(msg)
 		return true
 	case comm.MSGS:
-		clog.Info("dispatchCmd() comm.MSGS: %+v", msg)
-
 		msgId := msg.Body()
 		bodys := room.ML.Bodys(msgId, msg)
-		msg.SetBody(bodys)
+		bs, _ := json.Marshal(bodys)
+		msg.SetBody(string(bs))
 		connWrap.Write(msg)
 		return true
 	default:
