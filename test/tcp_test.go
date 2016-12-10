@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bufio"
 	"fmt"
 
 	_ "github.com/simplejia/connsvr"
@@ -51,20 +52,10 @@ func TestTcp(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		result := make([]byte, 4096)
-		readLen, err := conn.Read(result)
-		if err != nil || readLen <= 0 {
-			t.Fatal(err, readLen)
-		}
-
 		_msg := new(proto.MsgTcp)
-		_, ok = _msg.DecodeHeader(result[:readLen])
+		ok = _msg.Decode(bufio.NewReader(conn))
 		if !ok {
 			t.Fatal("_msg.DecodeHeader() error")
-		}
-		ok = _msg.Decode(result[:readLen])
-		if !ok {
-			t.Fatal("_msg.Decode() error")
 		}
 
 		if _msg.Cmd() != cmd {

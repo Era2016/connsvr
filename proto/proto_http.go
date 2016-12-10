@@ -1,7 +1,9 @@
 package proto
 
 import (
+	"bufio"
 	"encoding/json"
+	"net/http"
 	"strconv"
 
 	"github.com/simplejia/clog"
@@ -9,7 +11,6 @@ import (
 	"github.com/simplejia/connsvr/conf"
 
 	"fmt"
-	"net/http"
 )
 
 type MsgHttp struct {
@@ -43,11 +44,13 @@ func (msg *MsgHttp) Encode() ([]byte, bool) {
 		)), true
 }
 
-func (msg *MsgHttp) Decode(data []byte) bool {
-	return true
-}
+func (msg *MsgHttp) Decode(buf *bufio.Reader) (ok bool) {
+	req, err := http.ReadRequest(buf)
+	if err != nil {
+		clog.Warn("MsgHttp:ReadRequest() %v", err)
+		return false
+	}
 
-func (msg *MsgHttp) DecodeReq(req *http.Request) bool {
 	cmd := req.FormValue("cmd")
 	cmd_b := comm.CMD(0)
 	if cmd != "" {

@@ -1,6 +1,7 @@
 package fsvr
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -41,8 +42,9 @@ func Fserver(host string, t comm.PROTO) {
 		c.SetWriteBuffer(conf.C.Cons.C_WBUF)
 
 		connWrap := &conn.ConnWrap{
-			T: t,
-			C: c,
+			T:   t,
+			C:   c,
+			Buf: bufio.NewReaderSize(c, conf.C.Cons.BUF_SIZE),
 		}
 		go frecv(connWrap)
 	}

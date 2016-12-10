@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
@@ -22,32 +23,32 @@ func TestMsgsHttp(t *testing.T) {
 	text := "hello world"
 	msgId := ""
 
-	func() {
-		conn, err := net.Dial(
-			"udp",
-			fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer conn.Close()
+	conn, err := net.Dial(
+		"udp",
+		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
 
-		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(cmd)
-		msg.SetRid(rid)
-		msg.SetUid(uid)
-		msg.SetBody(text)
-		msg.SetExt(`{"msgid": "1"}`)
-		data, ok := msg.Encode()
-		if !ok {
-			t.Fatal("msg.Encode() error")
-		}
+	msg := proto.NewMsg(comm.UDP)
+	msg.SetCmd(cmd)
+	msg.SetRid(rid)
+	msg.SetUid(uid)
+	msg.SetBody(text)
+	msg.SetExt(`{"msgid": "1"}`)
+	data, ok := msg.Encode()
+	if !ok {
+		t.Fatal("msg.Encode() error")
+	}
 
-		_, err = conn.Write(data)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	_, err = conn.Write(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(time.Millisecond)
 
 	gpp := &utils.GPP{
 		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),

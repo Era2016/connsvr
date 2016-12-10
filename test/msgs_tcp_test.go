@@ -1,8 +1,10 @@
 package tests
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
@@ -21,47 +23,21 @@ func TestMsgsTcp(t *testing.T) {
 	text := "hello world"
 	msgId := ""
 
-	func() {
-		conn, err := net.Dial(
-			"udp",
-			fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer conn.Close()
-
-		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(cmd)
-		msg.SetRid(rid)
-		msg.SetUid(uid)
-		msg.SetBody(text)
-		msg.SetExt(`{"msgid": "1"}`)
-		data, ok := msg.Encode()
-		if !ok {
-			t.Fatal("msg.Encode() error")
-		}
-
-		_, err = conn.Write(data)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
-
 	conn, err := net.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Tport),
+		"udp",
+		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	msg := proto.NewMsg(comm.TCP)
-	msg.SetCmd(comm.MSGS)
-	msg.SetUid("")
+	msg := proto.NewMsg(comm.UDP)
+	msg.SetCmd(cmd)
 	msg.SetRid(rid)
-	msg.SetBody(msgId)
+	msg.SetUid(uid)
+	msg.SetBody(text)
+	msg.SetExt(`{"msgid": "1"}`)
 	data, ok := msg.Encode()
 	if !ok {
 		t.Fatal("msg.Encode() error")
@@ -72,20 +48,36 @@ func TestMsgsTcp(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := make([]byte, 4096)
-	readLen, err := conn.Read(result)
-	if err != nil || readLen <= 0 {
-		t.Fatal(err, readLen)
+	time.Sleep(time.Millisecond)
+
+	conn, err = net.Dial(
+		"tcp",
+		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Tport),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	msg = proto.NewMsg(comm.TCP)
+	msg.SetCmd(comm.MSGS)
+	msg.SetUid("")
+	msg.SetRid(rid)
+	msg.SetBody(msgId)
+	data, ok = msg.Encode()
+	if !ok {
+		t.Fatal("msg.Encode() error")
+	}
+
+	_, err = conn.Write(data)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	_msg := new(proto.MsgTcp)
-	_, ok = _msg.DecodeHeader(result[:readLen])
+	ok = _msg.Decode(bufio.NewReader(conn))
 	if !ok {
 		t.Fatal("_msg.DecodeHeader() error")
-	}
-	ok = _msg.Decode(result[:readLen])
-	if !ok {
-		t.Fatal("_msg.Decode() error")
 	}
 
 	if _msg.Cmd() == comm.ERR {

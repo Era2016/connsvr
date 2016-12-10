@@ -1,6 +1,7 @@
 package proto
 
 import (
+	"bufio"
 	"encoding/binary"
 	"runtime/debug"
 
@@ -18,38 +19,47 @@ type MsgTcp struct {
 	MsgComm
 }
 
-func (msg *MsgTcp) DecodeHeader(data []byte) (skipRead int, ok bool) {
-	pos := 0
-	for ; pos < len(data); pos++ {
-		if data[pos] == SBYTE {
-			break
-		}
-	}
-	if pos == len(data) {
-		return len(data), false
-	} else if pos > 0 {
-		return pos, false
-	}
-
-	msg.length = int(binary.BigEndian.Uint16(data[1:3]))
-	if msg.length > conf.C.Cons.BODY_LEN_LIMIT {
-		return len(data), false
-	}
-
-	return 0, true
-}
-
-func (msg *MsgTcp) Decode(data []byte) (ok bool) {
+func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			clog.Error("MsgTcp:Decode() recover err: %v, stack: %s", err, debug.Stack())
-			ok = false
 		}
 	}()
 
+	for {
+		sbyte, err := buf.ReadByte()
+		if err != nil {
+			return false
+		}
+		if sbyte == SBYTE {
+			break
+		}
+	}
+
+	length := [2]byte{}
+	for m := 0; m < len(length); {
+		n, err := buf.Read(length[m:])
+		if err != nil || n <= 0 {
+			return false
+		}
+		m += n
+	}
+
+	msg.length = int(binary.BigEndian.Uint16(length[:]))
+	if msg.length > conf.C.Cons.BODY_LEN_LIMIT {
+		return false
+	}
+
+	data := make([]byte, msg.length-3)
+	for m := 0; m < len(data); {
+		n, err := buf.Read(data[m:])
+		if err != nil || n <= 0 {
+			return false
+		}
+		m += n
+	}
+
 	pos := 0
-	// skip sbyte+length
-	pos += 3
 	msg.cmd = comm.CMD(data[pos])
 	pos += 1
 	msg.subcmd = data[pos]

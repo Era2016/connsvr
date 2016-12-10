@@ -1,6 +1,7 @@
 package proto
 
 import (
+	"bufio"
 	"fmt"
 
 	"github.com/simplejia/connsvr/comm"
@@ -26,7 +27,7 @@ type Msg interface {
 	Misc() interface{}
 	SetMisc(interface{})
 	Encode() ([]byte, bool)
-	Decode([]byte) bool
+	Decode(*bufio.Reader) bool
 }
 
 type MsgComm struct {
@@ -117,7 +118,7 @@ func (msg *MsgComm) Encode() ([]byte, bool) {
 	return nil, false
 }
 
-func (msg *MsgComm) Decode([]byte) bool {
+func (msg *MsgComm) Decode(*bufio.Reader) bool {
 	return false
 }
 

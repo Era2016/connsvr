@@ -12,11 +12,10 @@ type MsgUdp struct {
 	MsgComm
 }
 
-func (msg *MsgUdp) Decode(data []byte) (ok bool) {
+func (msg *MsgUdp) DecodeBytes(data []byte) (ok bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			clog.Error("MsgUdp:Decode() recover err: %v, stack: %s", err, debug.Stack())
-			ok = false
 		}
 	}()
 

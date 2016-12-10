@@ -20,7 +20,7 @@ func Bserver(host string) {
 	}
 	defer conn.Close()
 
-	msg := proto.NewMsg(comm.UDP)
+	msg := new(proto.MsgUdp)
 	request := make([]byte, 1024*50)
 	for {
 		readLen, err := conn.Read(request)
@@ -28,10 +28,10 @@ func Bserver(host string) {
 			continue
 		}
 
-		ok := msg.Decode(request[:readLen])
-		clog.Debug("Bserver() msg.Decode %+v, %v", msg, ok)
+		ok := msg.DecodeBytes(request[:readLen])
+		clog.Debug("Bserver() msg.DecodeBytes %+v, %v", msg, ok)
 		if !ok {
-			clog.Error("Bserver:Decode() %v", request[:readLen])
+			clog.Error("Bserver:DecodeBytes() %v", request[:readLen])
 			continue
 		}
 
