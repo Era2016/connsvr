@@ -77,12 +77,12 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		subcmd := strconv.Itoa(int(msg.Subcmd()))
 		pub := conf.C.Pubs[subcmd]
 		if pub == nil {
-			clog.Error("dispatchCmd() no expected subcmd: %s", subcmd)
+			clog.Error("fsvr:dispatchCmd() no expected subcmd: %s", subcmd)
 			return false
 		}
 		addr, err := PubAddrFunc(pub.AddrType, pub.Addr)
 		if err != nil {
-			clog.Error("dispatchCmd() PubAddrFunc error: %v", err)
+			clog.Error("fsvr:dispatchCmd() PubAddrFunc error: %v", err)
 			return true
 		}
 		arrs := []string{
@@ -109,7 +109,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		if ext := msg.Ext(); ext != "" {
 			err := json.Unmarshal([]byte(ext), &cliExt)
 			if err != nil {
-				clog.Error("dispatchCmd() json.Unmarshal error: %v", err)
+				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v", err)
 				return false
 			}
 		}
@@ -140,9 +140,9 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 			}
 
 			if err != nil {
-				clog.Error("dispatchCmd() http error, err: %v, body: %s, gpp: %v, step: %d", err, body, gpp, step)
+				clog.Error("fsvr:dispatchCmd() http error, err: %v, body: %s, gpp: %v, step: %d", err, body, gpp, step)
 			} else {
-				clog.Debug("dispatchCmd() http success, body: %s, gpp: %v", body, gpp)
+				clog.Debug("fsvr:dispatchCmd() http success, body: %s, gpp: %v", body, gpp)
 				break
 			}
 		}
@@ -163,7 +163,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		connWrap.Write(msg)
 		return true
 	default:
-		clog.Warn("dispatchCmd() unexpected cmd: %v", msg.Cmd())
+		clog.Warn("fsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())
 		return true
 	}
 

@@ -16,7 +16,7 @@ import (
 )
 
 func TestMsgsHttp(t *testing.T) {
-	cmd := 99
+	cmd := comm.PUSH
 	rid := "r1"
 	uid := "u_TestMsgsHttp"
 	text := "hello world"
@@ -33,7 +33,7 @@ func TestMsgsHttp(t *testing.T) {
 		defer conn.Close()
 
 		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(comm.CMD(cmd))
+		msg.SetCmd(cmd)
 		msg.SetRid(rid)
 		msg.SetUid(uid)
 		msg.SetBody(text)

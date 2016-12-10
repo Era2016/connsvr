@@ -15,7 +15,7 @@ import (
 )
 
 func TestMsgsTcp(t *testing.T) {
-	cmd := 99
+	cmd := comm.PUSH
 	rid := "r1"
 	uid := "u_TestMsgsTcp"
 	text := "hello world"
@@ -32,7 +32,7 @@ func TestMsgsTcp(t *testing.T) {
 		defer conn.Close()
 
 		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(comm.CMD(cmd))
+		msg.SetCmd(cmd)
 		msg.SetRid(rid)
 		msg.SetUid(uid)
 		msg.SetBody(text)

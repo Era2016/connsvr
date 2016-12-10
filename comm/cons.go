@@ -12,6 +12,7 @@ const (
 	LEAVE
 	PUB
 	MSGS
+	PUSH
 	ERR = 0xff
 )
 
@@ -62,7 +63,8 @@ type ServExt struct {
 
 // PushExt is from backend
 type PushExt struct {
-	MsgId string
+	MsgId      string
+	GetMsgKind GET_MSG_KIND
 }
 
 // CliExt is from client

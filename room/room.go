@@ -253,13 +253,25 @@ func (roomMap *RoomMap) proc(i int) {
 				break
 			}
 
-			servExt := &comm.ServExt{
-				GetMsgKind: conf.V.Get().GetMsgKind,
+			servExt := &comm.ServExt{}
+
+			var pushExt *comm.PushExt
+			if ext := m.Ext(); ext != "" {
+				err := json.Unmarshal([]byte(ext), &pushExt)
+				if err != nil {
+					clog.Error("RoomMap:Proc() json.Unmarshal error: %v", err)
+					break
+				}
 			}
-			if kind, ok := conf.V.Get().Room2Kind[rid]; ok {
+			if pushExt != nil && pushExt.GetMsgKind != 0 {
+				servExt.GetMsgKind = pushExt.GetMsgKind
+			} else if kind, ok := conf.V.Get().Room2Kind[rid]; ok {
 				servExt.GetMsgKind = kind
+			} else {
+				servExt.GetMsgKind = conf.V.Get().GetMsgKind
 			}
-			ext_bs, _ := json.Marshal(servExt)
+
+			servExt_bs, _ := json.Marshal(servExt)
 
 			btime := time.Now()
 			ukey_ex := [2]string{m.Uid(), m.Sid()}
@@ -285,10 +297,12 @@ func (roomMap *RoomMap) proc(i int) {
 				msg.SetUid(connWrap.Uid)
 				msg.SetSid(connWrap.Sid)
 				msg.SetRid(m.Rid())
-				if servExt.GetMsgKind == comm.DISPLAY {
+
+				if kind := servExt.GetMsgKind; kind == comm.DISPLAY {
 					msg.SetBody(m.Body())
 				}
-				msg.SetExt(string(ext_bs))
+
+				msg.SetExt(string(servExt_bs))
 				msg.SetMisc(connWrap.Misc)
 				if ok := connWrap.Write(msg); !ok {
 					connWrap.Close()
@@ -309,7 +323,6 @@ func (roomMap *RoomMap) proc(i int) {
 			clog.Busi(comm.BUSI_STAT, "%s", stat)
 		default:
 			clog.Error("RoomMap:proc() unexpected cmd %v", msg.cmd)
-			return
 		}
 	}
 }

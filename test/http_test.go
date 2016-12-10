@@ -18,7 +18,7 @@ import (
 )
 
 func TestHttp(t *testing.T) {
-	cmd := 99
+	cmd := comm.PUSH
 	rid := "r1"
 	uid := "u_TestHttp"
 	sid := "s1"
@@ -49,7 +49,7 @@ func TestHttp(t *testing.T) {
 
 		var m map[string]string
 		json.Unmarshal(resp, &m)
-		if _cmd := m["cmd"]; _cmd != strconv.Itoa(cmd) {
+		if _cmd := m["cmd"]; _cmd != strconv.Itoa(int(cmd)) {
 			t.Errorf("get: %v, expected: %v", _cmd, cmd)
 		}
 		if _uid := m["uid"]; _uid != uid {
@@ -78,7 +78,7 @@ func TestHttp(t *testing.T) {
 		defer conn.Close()
 
 		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(comm.CMD(cmd))
+		msg.SetCmd(cmd)
 		msg.SetRid(rid)
 		msg.SetBody(text)
 		data, ok := msg.Encode()

@@ -16,7 +16,7 @@ import (
 )
 
 func TestTcp(t *testing.T) {
-	cmd := 99
+	cmd := comm.PUSH
 	rid := "r1"
 	uid := "u_TestTcp"
 	text := "hello world"
@@ -67,7 +67,7 @@ func TestTcp(t *testing.T) {
 			t.Fatal("_msg.Decode() error")
 		}
 
-		if int(_msg.Cmd()) != cmd {
+		if _msg.Cmd() != cmd {
 			t.Errorf("get: %v, expected: %v", _msg.Cmd(), cmd)
 		}
 		if _msg.Uid() != uid {
@@ -96,7 +96,7 @@ func TestTcp(t *testing.T) {
 		defer conn.Close()
 
 		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(comm.CMD(cmd))
+		msg.SetCmd(cmd)
 		msg.SetRid(rid)
 		msg.SetBody(text)
 		data, ok := msg.Encode()
