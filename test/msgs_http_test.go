@@ -50,13 +50,14 @@ func TestMsgsHttp(t *testing.T) {
 	}()
 
 	gpp := &utils.GPP{
-		Uri: fmt.Sprintf("http://:%d/msgs", conf.C.App.Hport),
+		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),
 		Headers: map[string]string{
 			"Connection": "Close",
 		},
 		Params: map[string]string{
+			"cmd":      strconv.Itoa(int(comm.MSGS)),
 			"rid":      rid,
-			"mid":      msgId,
+			"body":     msgId,
 			"callback": "",
 		},
 	}

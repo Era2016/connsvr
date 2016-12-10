@@ -1,17 +1,15 @@
 package proto
 
 import (
-	"bytes"
 	"encoding/json"
 	"strconv"
-	"strings"
 
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 
 	"fmt"
-	"net/url"
+	"net/http"
 )
 
 type MsgHttp struct {
@@ -46,121 +44,58 @@ func (msg *MsgHttp) Encode() ([]byte, bool) {
 }
 
 func (msg *MsgHttp) Decode(data []byte) bool {
-	pos1 := bytes.IndexByte(data, ' ')
-	if pos1 < 0 || pos1 >= len(data)-1 {
-		return false
-	}
-	pos2 := bytes.IndexByte(data[pos1+1:], ' ')
-	if pos2 < 0 {
-		return false
-	}
-	pos2 += pos1 + 1
-	rMethod, rUri := data[:pos1], data[pos1+1:pos2]
-	if strings.ToUpper(string(rMethod)) != "GET" {
-		return false
-	}
+	return true
+}
 
-	pUrl, err := url.ParseRequestURI(string(rUri))
-	if err != nil {
-		return false
+func (msg *MsgHttp) DecodeReq(req *http.Request) bool {
+	cmd := req.FormValue("cmd")
+	cmd_b := comm.CMD(0)
+	if cmd != "" {
+		cmd_i, err := strconv.Atoi(cmd)
+		if err != nil || cmd_i < 0 || cmd_i > 255 {
+			clog.Error("MsgHttp:DecodeReq() err: %v, cmd: %v", err, cmd)
+			return false
+		}
+		cmd_b = comm.CMD(cmd_i)
 	}
 
-	switch pUrl.Path {
-	case "/enter":
-		values := pUrl.Query()
-		rid := values.Get("rid")
-		uid := values.Get("uid")
-		sid := values.Get("sid")
-		callback := values.Get("callback")
-		if rid == "" || uid == "" {
+	subcmd := req.FormValue("subcmd")
+	subcmd_b := byte(0)
+	if subcmd != "" {
+		subcmd_i, err := strconv.Atoi(subcmd)
+		if err != nil || subcmd_i < 0 || subcmd_i > 255 {
+			clog.Error("MsgHttp:DecodeReq() err: %v, subcmd: %v", err, subcmd)
 			return false
 		}
-		if len(rid) > 255 ||
-			len(uid) > 255 ||
-			len(sid) > 255 ||
-			len(callback) > 255 {
-			return false
-		}
+		subcmd_b = byte(subcmd_i)
+	}
 
-		msg.rid = rid
-		msg.uid = uid
-		msg.sid = sid
-		msg.misc = callback
-		msg.cmd = comm.ENTER
-		return true
-	case "/msgs":
-		values := pUrl.Query()
-		rid := values.Get("rid")
-		uid := values.Get("uid")
-		sid := values.Get("sid")
-		subcmd := values.Get("subcmd")
-		mid := values.Get("mid")
-		callback := values.Get("callback")
-		if rid == "" {
-			return false
-		}
-		if len(rid) > 255 ||
-			len(uid) > 255 ||
-			len(sid) > 255 ||
-			len(mid) > 255 ||
-			len(callback) > 255 {
-			return false
-		}
+	rid := req.FormValue("rid")
+	uid := req.FormValue("uid")
+	sid := req.FormValue("sid")
+	callback := req.FormValue("callback")
+	body := req.FormValue("body")
 
-		subcmd_b := byte(0)
-		if subcmd != "" {
-			subcmd_i, err := strconv.Atoi(subcmd)
-			if err != nil || subcmd_i < 0 || subcmd_i > 255 {
-				clog.Error("MsgHttp:Decode() msgs err: %v, subcmd: %v", err, subcmd)
-				return false
-			}
-			subcmd_b = byte(subcmd_i)
-		}
-
-		msg.rid = rid
-		msg.uid = uid
-		msg.body = mid
-		msg.misc = callback
-		msg.cmd = comm.MSGS
-		msg.subcmd = subcmd_b
-		return true
-	case "/pub":
-		values := pUrl.Query()
-		rid := values.Get("rid")
-		uid := values.Get("uid")
-		sid := values.Get("sid")
-		subcmd := values.Get("subcmd")
-		body := values.Get("body")
-		callback := values.Get("callback")
-		if rid == "" {
-			return false
-		}
-		if len(rid) > 255 ||
-			len(uid) > 255 ||
-			len(sid) > 255 ||
-			len(body) > conf.C.Cons.BODY_LEN_LIMIT ||
-			len(callback) > 255 {
-			return false
-		}
-
-		subcmd_b := byte(0)
-		if subcmd != "" {
-			subcmd_i, err := strconv.Atoi(subcmd)
-			if err != nil || subcmd_i < 0 || subcmd_i > 255 {
-				clog.Error("MsgHttp:Decode() pub err: %v, subcmd: %v", err, subcmd)
-				return false
-			}
-			subcmd_b = byte(subcmd_i)
-		}
-
-		msg.rid = rid
-		msg.uid = uid
-		msg.body = body
-		msg.misc = callback
-		msg.cmd = comm.PUB
-		msg.subcmd = subcmd_b
-		return true
-	default:
+	if len(rid) > 255 ||
+		len(uid) > 255 ||
+		len(sid) > 255 ||
+		len(body) > conf.C.Cons.BODY_LEN_LIMIT ||
+		len(callback) > 255 {
 		return false
 	}
+
+	msg.cmd = cmd_b
+	msg.subcmd = subcmd_b
+	msg.rid = rid
+	msg.uid = uid
+	msg.sid = sid
+	msg.body = body
+	msg.misc = callback
+
+	cliExt := &comm.CliExt{
+		Cookie: req.Header.Get("Cookie"),
+	}
+	ext_bs, _ := json.Marshal(cliExt)
+	msg.ext = string(ext_bs)
+	return true
 }

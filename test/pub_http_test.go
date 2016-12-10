@@ -45,11 +45,12 @@ func TestHttpPub(t *testing.T) {
 	}
 
 	gpp := &utils.GPP{
-		Uri: fmt.Sprintf("http://:%d/pub", conf.C.App.Hport),
+		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),
 		Headers: map[string]string{
 			"Connection": "Close",
 		},
 		Params: map[string]string{
+			"cmd":      strconv.Itoa(int(comm.PUB)),
 			"subcmd":   "1",
 			"rid":      rid,
 			"uid":      uid,
@@ -70,5 +71,5 @@ func TestHttpPub(t *testing.T) {
 		t.Errorf("please check you conf(pubs)!!!")
 	}
 
-	t.Log("get resp:", string(resp))
+	t.Log("get resp:", m["body"])
 }

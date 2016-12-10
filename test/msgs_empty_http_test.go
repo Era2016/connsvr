@@ -3,8 +3,10 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	_ "github.com/simplejia/connsvr"
+	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 	"github.com/simplejia/utils"
 
@@ -17,11 +19,12 @@ func TestMsgsEmptyHttp(t *testing.T) {
 	uid := "u_TestMsgsEmptyHttp"
 
 	gpp := &utils.GPP{
-		Uri: fmt.Sprintf("http://:%d/msgs", conf.C.App.Hport),
+		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),
 		Headers: map[string]string{
 			"Connection": "Close",
 		},
 		Params: map[string]string{
+			"cmd":      strconv.Itoa(int(comm.MSGS)),
 			"rid":      rid,
 			"uid":      uid,
 			"subcmd":   subcmd,

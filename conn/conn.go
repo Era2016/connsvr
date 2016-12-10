@@ -1,8 +1,9 @@
 package conn
 
 import (
-	"bytes"
+	"bufio"
 	"net"
+	"net/http"
 
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
@@ -33,9 +34,9 @@ func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
 			connWrap.LeftData = nil
 		}
 		for rawRead < 3 { // magic number 3 is length of sbyte+length
-			readLen, err := comm.ReadTimeout(connWrap.C, rawData[rawRead:], conf.C.Cons.C_RTIMEOUT)
+			readLen, err := connWrap.C.Read(rawData[rawRead:])
 			if err != nil || readLen <= 0 {
-				clog.Warn("ConnWrap:ReadTimeout() 1, %v, %v", readLen, err)
+				clog.Warn("ConnWrap:Read() 1, %v, %v", readLen, err)
 				return nil, false
 			}
 			rawRead += readLen
@@ -53,9 +54,9 @@ func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
 				rawData = append(rawData, make([]byte, msg.Length()-len(rawData))...)
 			}
 			for rawRead < msg.Length() {
-				readLen, err := comm.ReadTimeout(connWrap.C, rawData[rawRead:], conf.C.Cons.C_RTIMEOUT)
+				readLen, err := connWrap.C.Read(rawData[rawRead:])
 				if err != nil || readLen <= 0 {
-					clog.Warn("ConnWrap:ReadTimeout() 2, %v, %v", readLen, err)
+					clog.Warn("ConnWrap:Read() 2, %v, %v", readLen, err)
 					return nil, false
 				}
 				rawRead += readLen
@@ -72,24 +73,14 @@ func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
 		return msg, true
 	case comm.HTTP:
 		msg := new(proto.MsgHttp)
-		rawData := make([]byte, conf.C.Cons.BUF_SIZE4HTTP) // BUF_SIZE一定要大于http header第一行的长度
-		rawRead := 0
-		for rawRead < len(rawData) {
-			readLen, err := comm.ReadTimeout(connWrap.C, rawData[rawRead:], conf.C.Cons.C_RTIMEOUT)
-			if err != nil || readLen <= 0 {
-				clog.Warn("ConnWrap:ReadTimeout() %v, %v", readLen, err)
-				return nil, false
-			}
-			rawRead += readLen
-
-			// check if get total first line
-			if pos := bytes.IndexByte(rawData[rawRead-readLen:rawRead], '\n'); pos > 0 {
-				break
-			}
+		req, err := http.ReadRequest(bufio.NewReaderSize(connWrap.C, conf.C.Cons.BUF_SIZE))
+		if err != nil {
+			clog.Warn("ConnWrap:ReadRequest() %v", err)
+			return nil, false
 		}
 
-		if !msg.Decode(rawData[:rawRead]) {
-			clog.Warn("ConnWrap:Decode() %v", rawData[:rawRead])
+		if !msg.DecodeReq(req) {
+			clog.Warn("ConnWrap:DecodeReq() %+v", req)
 			return nil, true
 		}
 
@@ -107,7 +98,7 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 		return true
 	}
 	for wlen := 0; wlen < len(data); {
-		_wlen, err := comm.WriteTimeout(connWrap.C, data[wlen:], conf.C.Cons.C_WTIMEOUT)
+		_wlen, err := connWrap.C.Write(data[wlen:])
 		if err != nil || _wlen <= 0 {
 			return false
 		}

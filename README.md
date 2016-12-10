@@ -29,8 +29,10 @@
 * http长连接
 ```
 ** 加入房间 **
-http://xxx.xxx.com/enter?rid=xxx&uid=xxx&sid=xxx&callback=xxx
+http://xxx.xxx.com?cmd=2&rid=xxx&uid=xxx&sid=xxx&callback=xxx
+Request Method: get or post
 请求参数说明:
+cmd: 固定为2
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
@@ -43,13 +45,15 @@ callback: jsonp回调函数，[可选]
 
 ```
 ** 拉取消息 **
-http://xxx.xxx.com/msgs?rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&mid=xxx&callback=xxx
+http://xxx.xxx.com?cmd=5&rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+Request Method: get or post
 请求参数说明:
+cmd: 固定为5
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
 subcmd: 用于区分不同业务，有效数据：1~255之间
-mid: 客户端读到的最后一条消息，没有传空
+body: 客户端读到的最后一条消息，没有传空
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
@@ -59,8 +63,10 @@ callback: jsonp回调函数，[可选]
 
 ```
 ** 上行消息 **
-http://xxx.xxx.com/pub?rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+http://xxx.xxx.com?cmd=4&rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+Request Method: get or post
 请求参数说明:
+cmd: 固定为4
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
@@ -94,7 +100,7 @@ Sbyte+Length+Cmd+Subcmd+UidLen+Uid+SidLen+Sid+RidLen+Rid+BodyLen+Body+ExtLen+Ext
 Sbyte: 1个字节，固定值：0xfa，标识数据包开始
 Length: 2个字节(网络字节序)，包括自身在内整个数据包的长度
 Cmd: 1个字节，
-  * 0x01：心跳 
+  * 0x01：心跳 // 现在的技术方案用不到心跳
   * 0x02：加入房间 
   * 0x03：退出房间 
   * 0x04：上行消息 
@@ -112,9 +118,14 @@ Rid: 房间id
 BodyLen: 2个字节(网络字节序)，代表Body长度
 Body: 和业务方对接，connsvr会中转给业务方
 ExtLen: 2个字节(网络字节序)，代表Ext长度
-Ext: 扩展字段，当来自于connsvr时，目前支持如下：
+Ext: 扩展字段:
+1. 当来自于connsvr时，目前支持如下：
 {    
     "GetMsgKind": 1 // 1: 推送通知，然后客户端主动拉后端服务  2: 推送整条消息，客户端不用拉 3: 推送通知，然后客户端来connsvr拉消息   
+}
+2. 当来自于client时，目前支持如下：
+{    
+    "Cookie": "xx=x;yy=y" // 传入client的cookie值
 }
 Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 

@@ -56,6 +56,7 @@ var PubAddrFunc = func(addrType, addr string) (string, error) {
 func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 	switch msg.Cmd() {
 	case comm.PING:
+		// 现在的技术方案用不到心跳
 		return true
 	case comm.ENTER:
 		// 不同用户不能复用同一个连接, 新用户替代老用户数据
@@ -77,7 +78,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		pub := conf.C.Pubs[subcmd]
 		if pub == nil {
 			clog.Error("dispatchCmd() no expected subcmd: %s", subcmd)
-			return true
+			return false
 		}
 		addr, err := PubAddrFunc(pub.AddrType, pub.Addr)
 		if err != nil {
@@ -102,6 +103,18 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 
 		headers := map[string]string{
 			"Host": pub.Host,
+		}
+
+		var cliExt *comm.CliExt
+		if ext := msg.Ext(); ext != "" {
+			err := json.Unmarshal([]byte(ext), &cliExt)
+			if err != nil {
+				clog.Error("dispatchCmd() json.Unmarshal error: %v", err)
+				return false
+			}
+		}
+		if cliExt != nil {
+			headers["Cookie"] = cliExt.Cookie
 		}
 
 		uri := fmt.Sprintf("http://%s/%s", addr, strings.TrimPrefix(pub.Cgi, "/"))
