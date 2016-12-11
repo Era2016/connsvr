@@ -3,6 +3,7 @@ package conn
 import (
 	"bufio"
 	"net"
+	"time"
 
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/proto"
@@ -33,12 +34,14 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 	if !ok {
 		return true
 	}
-	for wlen := 0; wlen < len(data); {
-		_wlen, err := connWrap.C.Write(data[wlen:])
-		if err != nil || _wlen <= 0 {
+
+	connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
+	for m := 0; m < len(data); {
+		n, err := connWrap.C.Write(data[m:])
+		if err != nil || n <= 0 {
 			return false
 		}
-		wlen += _wlen
+		m += n
 	}
 	return true
 }
