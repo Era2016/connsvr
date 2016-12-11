@@ -31,7 +31,7 @@ func Bserver(host string) {
 		ok := msg.DecodeBytes(request[:readLen])
 		clog.Debug("Bserver() msg.DecodeBytes %+v, %v", msg, ok)
 		if !ok {
-			clog.Error("Bserver:DecodeBytes() %v", request[:readLen])
+			clog.Error("Bserver() msg.DecodeBytes %v", request[:readLen])
 			continue
 		}
 
