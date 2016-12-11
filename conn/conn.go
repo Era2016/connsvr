@@ -35,6 +35,7 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 		return true
 	}
 
+	// 这里需要设置写超时，因为缓冲区会满，有了超时就不至于导致房间处理goroutine阻塞
 	connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
 	for m := 0; m < len(data); {
 		n, err := connWrap.C.Write(data[m:])
