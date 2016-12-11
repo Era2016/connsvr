@@ -42,7 +42,7 @@ func Bserver(host string) {
 func dispatchCmd(msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PUSH:
-		room.RM.Push(msg)
+		go room.RM.Push(msg)
 	default:
 		clog.Error("bsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())
 	}

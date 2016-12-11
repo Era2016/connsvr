@@ -75,7 +75,8 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 
 	n := conf.V.Get().ConnMsgNum
 	if len(a) > n {
-		a = a[len(a)-n:]
+		copy(a, a[len(a)-n:])
+		a = a[:n]
 	}
 
 	a.SetLc(msg.Rid())
@@ -328,10 +329,11 @@ func (roomMap *RoomMap) proc(i int) {
 }
 
 func (roomMap *RoomMap) Add(rid string, connWrap *conn.ConnWrap) {
+	clog.Info("RoomMap:Add() %s, %+v", rid, connWrap)
+
 	if rid == "" || connWrap.Uid == "" {
 		return
 	}
-	clog.Info("RoomMap:Add() %s, %+v", rid, connWrap)
 
 	i := utils.Hash33(connWrap.Uid) % roomMap.n
 	select {
@@ -342,10 +344,11 @@ func (roomMap *RoomMap) Add(rid string, connWrap *conn.ConnWrap) {
 }
 
 func (roomMap *RoomMap) Del(rid string, connWrap *conn.ConnWrap) {
+	clog.Info("RoomMap:Del() %s, %+v", rid, connWrap)
+
 	if rid == "" || connWrap.Uid == "" {
 		return
 	}
-	clog.Info("RoomMap:Del() %s, %+v", rid, connWrap)
 
 	i := utils.Hash33(connWrap.Uid) % roomMap.n
 	select {
