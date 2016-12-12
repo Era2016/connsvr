@@ -19,9 +19,8 @@ const (
 type PUSH_KIND byte
 
 const (
-	NOTIFY   PUSH_KIND = iota + 1 // 推送通知，然后客户端主动拉后端服务
-	DISPLAY                       // 推送整条消息，客户端不用拉
-	CONNDATA                      // 推送通知，然后客户端来connsvr拉消息
+	NOTIFY  PUSH_KIND = iota + 1 // 推送通知，然后客户端主动拉connsvr或者后端服务
+	DISPLAY                      // 推送整条消息，客户端不用拉
 )
 
 type PROTO int

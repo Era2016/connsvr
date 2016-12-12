@@ -16,9 +16,9 @@ func (i CMD) String() string {
 	return _CMD_name[_CMD_index[i]:_CMD_index[i+1]]
 }
 
-const _PUSH_KIND_name = "NOTIFYDISPLAYCONNDATA"
+const _PUSH_KIND_name = "NOTIFYDISPLAY"
 
-var _PUSH_KIND_index = [...]uint8{0, 6, 13, 21}
+var _PUSH_KIND_index = [...]uint8{0, 6, 13}
 
 func (i PUSH_KIND) String() string {
 	i -= 1
