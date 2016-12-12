@@ -70,3 +70,15 @@ type PushExt struct {
 type CliExt struct {
 	Cookie string
 }
+
+// EnterBody is from ENTER CMD
+type EnterBody struct {
+	NeedMsgs  bool            // 是否需要在enter时就返回未读消息
+	MixSubcmd map[byte]string // 混合业务命令字(优先级要高于Subcmd), key: subcmd, value: msgid
+	MsgId     string          // 本地读到的最新消息id, 配合subcmd一起使用, 当MixSubcmd为空时才有效
+}
+
+// MsgsBody is from MSGS CMD
+type MsgsBody struct {
+	MsgId string // 本地读到的最新消息id, 配合subcmd一起使用
+}

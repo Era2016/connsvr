@@ -37,7 +37,12 @@ subcmd: 用于区分不同业务，有效数据：1~255之间
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
-body: 客户端读到的最后一条消息，没有传空
+body: 支持如下：(可以传空串）
+{
+	NeedMsgs  bool            // 是否需要在enter时就返回未读消息
+	MixSubcmd map[byte]string // 混合业务命令字(优先级要高于Subcmd), key: subcmd, value: msgid
+	MsgId     string          // 本地读到的最新消息id, 配合subcmd一起使用，当MixSubcmd为空时才有效
+}
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
@@ -57,7 +62,10 @@ subcmd: 用于区分不同业务，有效数据：1~255之间
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
-body: 客户端读到的最后一条消息，没有传空
+body: 支持如下：(可以传空串）
+{
+	MsgId string // 本地读到的最新消息id, 配合subcmd一起使用
+}
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
@@ -136,8 +144,16 @@ Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 
 注1：上行数据包长度，即Length大小，限制4096字节内（可配置），下行不限
 注2：当connsvr服务处理异常，比如调用后端服务失败，返回给client的数据包，Cmd：0xff
-注3：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表
-注4：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的subcmd，立马返回消息列表
+注3：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表，body支持如下：
+{
+	MsgId string // 本地读到的最新消息id
+}
+注4：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的body，立马返回消息列表, body支持如下：
+{
+	NeedMsgs  bool            // 是否需要在enter时就返回未读消息
+	MixSubcmd map[byte]string // 混合业务命令字(优先级要高于Subcmd), key: subcmd, value: msgid
+	MsgId     string          // 本地读到的最新消息id, 当MixSubcmd为空时才有效
+}
 ```
 
 * 后端push协议格式(udp)

@@ -72,14 +72,42 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		connWrap.Misc = msg.Misc()
 		room.RM.Add(msg.Rid(), connWrap)
 
-		if msg.Subcmd() > 0 {
-			msgId := msg.Body()
-			bodys := room.ML.Bodys(msgId, msg)
-			if len(bodys) > 0 {
-				bs, _ := json.Marshal(bodys)
-				msg.SetBody(string(bs))
-				msg.SetCmd(comm.MSGS)
-				connWrap.Write(msg)
+		var enterBody *comm.EnterBody
+		if body := msg.Body(); body != "" {
+			err := json.Unmarshal([]byte(body), &enterBody)
+			if err != nil {
+				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, body)
+				return false
+			}
+		}
+		if enterBody != nil {
+			if enterBody.NeedMsgs {
+				if mixSubcmd := enterBody.MixSubcmd; len(mixSubcmd) > 0 {
+					mixBody := map[byte][]string{}
+					for subcmd, msgId := range mixSubcmd {
+						msg.SetSubcmd(subcmd)
+						bodys := room.ML.Bodys(msgId, msg)
+						if len(bodys) > 0 {
+							mixBody[subcmd] = bodys
+						}
+					}
+
+					if len(mixBody) > 0 {
+						bs, _ := json.Marshal(mixBody)
+						msg.SetBody(string(bs))
+						msg.SetCmd(comm.MSGS)
+						connWrap.Write(msg)
+					}
+				} else {
+					msgId := enterBody.MsgId
+					bodys := room.ML.Bodys(msgId, msg)
+					if len(bodys) > 0 {
+						bs, _ := json.Marshal(bodys)
+						msg.SetBody(string(bs))
+						msg.SetCmd(comm.MSGS)
+						connWrap.Write(msg)
+					}
+				}
 			}
 		}
 		return true
@@ -122,7 +150,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		if ext := msg.Ext(); ext != "" {
 			err := json.Unmarshal([]byte(ext), &cliExt)
 			if err != nil {
-				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v", err)
+				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, ext)
 				return false
 			}
 		}
@@ -169,7 +197,18 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		connWrap.Write(msg)
 		return true
 	case comm.MSGS:
-		msgId := msg.Body()
+		var msgsBody *comm.MsgsBody
+		if body := msg.Body(); body != "" {
+			err := json.Unmarshal([]byte(body), &msgsBody)
+			if err != nil {
+				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, body)
+				return false
+			}
+		}
+		msgId := ""
+		if msgsBody != nil {
+			msgId = msgsBody.MsgId
+		}
 		bodys := room.ML.Bodys(msgId, msg)
 		bs, _ := json.Marshal(bodys)
 		msg.SetBody(string(bs))
