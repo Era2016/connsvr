@@ -1,4 +1,4 @@
-//go:generate stringer -type=CMD,GET_MSG_KIND,PROTO -output=cons_string.go
+//go:generate stringer -type=CMD,PUSH_KIND,PROTO -output=cons_string.go
 
 package comm
 
@@ -16,12 +16,12 @@ const (
 	ERR = 0xff
 )
 
-type GET_MSG_KIND byte
+type PUSH_KIND byte
 
 const (
-	NOTIFY   GET_MSG_KIND = iota + 1 // 推送通知，然后客户端主动拉后端服务
-	DISPLAY                          // 推送整条消息，客户端不用拉
-	CONNDATA                         // 推送通知，然后客户端来connsvr拉消息
+	NOTIFY   PUSH_KIND = iota + 1 // 推送通知，然后客户端主动拉后端服务
+	DISPLAY                       // 推送整条消息，客户端不用拉
+	CONNDATA                      // 推送通知，然后客户端来connsvr拉消息
 )
 
 type PROTO int
@@ -58,13 +58,13 @@ type Msgs []*struct {
 
 // ServExt will be transfered to client
 type ServExt struct {
-	GetMsgKind GET_MSG_KIND
+	PushKind PUSH_KIND
 }
 
 // PushExt is from backend
 type PushExt struct {
-	MsgId      string
-	GetMsgKind GET_MSG_KIND
+	MsgId    string
+	PushKind PUSH_KIND
 }
 
 // CliExt is from client

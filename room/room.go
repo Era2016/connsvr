@@ -68,17 +68,18 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 	if i == len(a) {
 		a = append(a, x)
 	} else if a[i].id == id {
-		// unexpected here
+		a[i] = x
 	} else {
 		a = append(a[:i], append([]*MsgElem{x}, a[i:]...)...)
 	}
 
-	n := conf.V.Get().ConnMsgNum
+	n := conf.V.Get().MsgNum
 	if len(a) > n {
 		copy(a, a[len(a)-n:])
 		a = a[:n]
 	}
 
+	sort.Sort(a)
 	a.SetLc(msg)
 }
 
@@ -269,12 +270,12 @@ func (roomMap *RoomMap) proc(i int) {
 					break
 				}
 			}
-			if pushExt != nil && pushExt.GetMsgKind != 0 {
-				servExt.GetMsgKind = pushExt.GetMsgKind
-			} else if kind, ok := conf.V.Get().Room2Kind[rid]; ok {
-				servExt.GetMsgKind = kind
+			if pushExt != nil && pushExt.PushKind != 0 {
+				servExt.PushKind = pushExt.PushKind
+			} else if kind, ok := conf.V.Get().RoomWithPushKind[rid]; ok {
+				servExt.PushKind = kind
 			} else {
-				servExt.GetMsgKind = conf.V.Get().GetMsgKind
+				servExt.PushKind = conf.V.Get().PushKind
 			}
 
 			servExt_bs, _ := json.Marshal(servExt)
@@ -304,7 +305,7 @@ func (roomMap *RoomMap) proc(i int) {
 				msg.SetSid(connWrap.Sid)
 				msg.SetRid(m.Rid())
 
-				if kind := servExt.GetMsgKind; kind == comm.DISPLAY {
+				if kind := servExt.PushKind; kind == comm.DISPLAY {
 					msg.SetBody(m.Body())
 				}
 
