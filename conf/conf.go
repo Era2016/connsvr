@@ -67,8 +67,8 @@ type Conf struct {
 
 type Var struct {
 	a                atomic.Value
-	PushKind         comm.PUSH_KIND
-	RoomWithPushKind map[string]comm.PUSH_KIND // 房间拉消息方式单独配置
+	PushKind         comm.PUSH_KIND            // 消息推送方式
+	RoomWithPushKind map[string]comm.PUSH_KIND // 消息推送方式, 房间单独配置
 	MsgNum           int                       // connsvr服务缓存消息最大长度
 }
 

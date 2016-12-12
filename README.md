@@ -8,8 +8,8 @@
 * 支持定期拉取远程服务器配置数据, 远程服务器的配置见conf/conf.json varhost节点, 配置数据格式见comm.Var:
 ```
 {
-	PushKind         comm.PUSH_KIND
-	RoomWithPushKind map[string]comm.PUSH_KIND // 房间拉消息方式单独配置
+	PushKind         comm.PUSH_KIND            // 消息推送方式
+	RoomWithPushKind map[string]comm.PUSH_KIND // 消息推送方式, 房间单独配置
 	MsgNum           int                       // connsvr服务缓存消息最大长度
 }
 ```
