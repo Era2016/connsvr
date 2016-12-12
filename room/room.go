@@ -374,6 +374,8 @@ func (roomMap *RoomMap) Push(msg proto.Msg) {
 			clog.Error("RoomMap:Push() json.Unmarshal error: %v", err)
 			return
 		}
+	}
+	if pushExt != nil {
 		ML.Append(pushExt.MsgId, msg)
 	}
 
