@@ -39,6 +39,7 @@ func TestHttp(t *testing.T) {
 				"rid":      rid,
 				"uid":      uid,
 				"sid":      sid,
+				"body":     "",
 				"callback": "",
 			},
 		}
@@ -49,24 +50,36 @@ func TestHttp(t *testing.T) {
 
 		var m map[string]string
 		json.Unmarshal(resp, &m)
-		if _cmd := m["cmd"]; _cmd != strconv.Itoa(int(cmd)) {
-			t.Errorf("get: %v, expected: %v", _cmd, cmd)
-		}
-		if _uid := m["uid"]; _uid != uid {
-			t.Errorf("get: %s, expected: %s", _uid, uid)
-		}
-		if _rid := m["rid"]; _rid != rid {
-			t.Errorf("get: %s, expected: %s", _rid, rid)
-		}
-		if body := m["body"]; body != text {
-			t.Errorf("get: %s, expected: %s", body, text)
+
+		switch m["cmd"] {
+		case strconv.Itoa(int(cmd)):
+			if _uid := m["uid"]; _uid != uid {
+				t.Errorf("get: %s, expected: %s", _uid, uid)
+			}
+			if _rid := m["rid"]; _rid != rid {
+				t.Errorf("get: %s, expected: %s", _rid, rid)
+			}
+			if body := m["body"]; body != text {
+				t.Errorf("get: %s, expected: %s", body, text)
+			}
+		case strconv.Itoa(int(comm.MSGS)):
+			if _uid := m["uid"]; _uid != uid {
+				t.Errorf("get: %s, expected: %s", _uid, uid)
+			}
+			if _rid := m["rid"]; _rid != rid {
+				t.Errorf("get: %s, expected: %s", _rid, rid)
+			}
+			t.Log("get resp:", m["body"])
+		default:
+			t.Errorf("get: %v, not expected", m["cmd"])
 		}
 	}()
+
+	time.Sleep(time.Millisecond * 10)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		time.Sleep(time.Millisecond * 50)
 
 		conn, err := net.Dial(
 			"udp",
@@ -79,8 +92,15 @@ func TestHttp(t *testing.T) {
 
 		msg := proto.NewMsg(comm.UDP)
 		msg.SetCmd(cmd)
+		msg.SetUid("")
+		msg.SetSid("")
 		msg.SetRid(rid)
 		msg.SetBody(text)
+		pushExt := &comm.PushExt{
+			MsgId: "1",
+		}
+		ext_bs, _ := json.Marshal(pushExt)
+		msg.SetExt(string(ext_bs))
 		data, ok := msg.Encode()
 		if !ok {
 			t.Fatal("msg.Encode() error")

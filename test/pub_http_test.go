@@ -8,10 +8,8 @@ import (
 	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
-	"github.com/simplejia/connsvr/proto"
 	"github.com/simplejia/utils"
 
-	"net"
 	"testing"
 )
 
@@ -20,29 +18,6 @@ func TestHttpPub(t *testing.T) {
 	uid := "u_TestHttpPub"
 	sid := "s1"
 	text := "hello world"
-
-	conn, err := net.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Tport),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-
-	msg := proto.NewMsg(comm.TCP)
-	msg.SetCmd(comm.ENTER)
-	msg.SetUid(uid)
-	msg.SetRid(rid)
-	data, ok := msg.Encode()
-	if !ok {
-		t.Fatal("msg.Encode() error")
-	}
-
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	gpp := &utils.GPP{
 		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),

@@ -71,6 +71,17 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		connWrap.Sid = msg.Sid()
 		connWrap.Misc = msg.Misc()
 		room.RM.Add(msg.Rid(), connWrap)
+
+		if msg.Subcmd() > 0 {
+			msgId := msg.Body()
+			bodys := room.ML.Bodys(msgId, msg)
+			if len(bodys) > 0 {
+				bs, _ := json.Marshal(bodys)
+				msg.SetBody(string(bs))
+				msg.SetCmd(comm.MSGS)
+				connWrap.Write(msg)
+			}
+		}
 		return true
 	case comm.LEAVE:
 		room.RM.Del(msg.Rid(), connWrap)

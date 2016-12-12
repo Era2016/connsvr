@@ -37,12 +37,12 @@ func (a MsgList) Len() int           { return len(a) }
 func (a MsgList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a MsgList) Less(i, j int) bool { return a[i].id < a[j].id }
 
-func (a MsgList) Key4Lc(rid string) string {
-	return "conn:msgs:" + rid
+func (a MsgList) Key4Lc(msg proto.Msg) string {
+	return fmt.Sprintf("conn:msgs:%v:%v", msg.Rid(), msg.Subcmd())
 }
 
-func (a MsgList) GetLc(rid string) (MsgList, bool) {
-	key_lc := a.Key4Lc(rid)
+func (a MsgList) GetLc(msg proto.Msg) (MsgList, bool) {
+	key_lc := a.Key4Lc(msg)
 	a_lc, ok := lc.Get(key_lc)
 	if a_lc != nil {
 		a = a_lc.(MsgList)
@@ -50,13 +50,13 @@ func (a MsgList) GetLc(rid string) (MsgList, bool) {
 	return a, ok
 }
 
-func (a MsgList) SetLc(rid string) {
-	key_lc := a.Key4Lc(rid)
+func (a MsgList) SetLc(msg proto.Msg) {
+	key_lc := a.Key4Lc(msg)
 	lc.Set(key_lc, a, time.Minute)
 }
 
 func (a MsgList) Append(id string, msg proto.Msg) {
-	a, _ = a.GetLc(msg.Rid())
+	a, _ = a.GetLc(msg)
 
 	x := &MsgElem{
 		id:   id,
@@ -79,7 +79,7 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 		a = a[:n]
 	}
 
-	a.SetLc(msg.Rid())
+	a.SetLc(msg)
 }
 
 // 请赋值成自己的根据addrType, addr返回ip:port的函数
@@ -88,7 +88,7 @@ var MsgAddrFunc = func(addrType, addr string) (string, error) {
 }
 
 func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
-	a, ok := a.GetLc(msg.Rid())
+	a, ok := a.GetLc(msg)
 
 	// 但connsvr缓存消息为空时，路由到后端服务拉取数据
 	if len(a) == 0 && !ok {
@@ -159,7 +159,7 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 			a = append(a, &MsgElem{})
 		}
 
-		a.SetLc(msg.Rid())
+		a.SetLc(msg)
 	}
 
 	i := sort.Search(len(a), func(i int) bool { return a[i].id > id })
@@ -236,6 +236,11 @@ func (roomMap *RoomMap) proc(i int) {
 			}
 
 			ukey := [2]string{connWrap.Uid, connWrap.Sid}
+
+			if v, ok := rids_m[ukey]; ok && v.C != connWrap.C {
+				break
+			}
+
 			delete(rids_m, ukey)
 			if len(rids_m) == 0 {
 				delete(data, rid)

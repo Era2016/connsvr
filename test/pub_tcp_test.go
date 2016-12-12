@@ -29,26 +29,12 @@ func TestTcpPub(t *testing.T) {
 	defer conn.Close()
 
 	msg := proto.NewMsg(comm.TCP)
-	msg.SetCmd(comm.ENTER)
-	msg.SetUid(uid)
-	msg.SetRid(rid)
-	data, ok := msg.Encode()
-	if !ok {
-		t.Fatal("msg.Encode() error")
-	}
-
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	msg = proto.NewMsg(comm.TCP)
 	msg.SetCmd(comm.PUB)
 	msg.SetSubcmd(1)
 	msg.SetUid(uid)
 	msg.SetRid(rid)
 	msg.SetBody(text)
-	data, ok = msg.Encode()
+	data, ok := msg.Encode()
 	if !ok {
 		t.Fatal("msg.Encode() error")
 	}

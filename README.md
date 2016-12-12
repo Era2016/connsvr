@@ -30,30 +30,34 @@
 * http长连接
 ```
 ** 加入房间 **
-http://xxx.xxx.com?cmd=2&rid=xxx&uid=xxx&sid=xxx&callback=xxx
+http://xxx.xxx.com?cmd=2&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xxx
 Request Method: get or post
 请求参数说明:
 cmd: 固定为2
+subcmd: 用于区分不同业务，有效数据：1~255之间
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
+body: 客户端读到的最后一条消息，没有传空
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
 [callback(][json body][)]
-示例如下: cb({"body":"hello world","cmd":"2","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+示例如下: cb({"body":["hello world"],"cmd":"2","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+
+注1：如果服务端有用户未读消息，并且传入合适的subcmd，立马返回消息列表
 ```
 
 ```
 ** 拉取消息 **
-http://xxx.xxx.com?cmd=5&rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+http://xxx.xxx.com?cmd=5&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xxx
 Request Method: get or post
 请求参数说明:
 cmd: 固定为5
+subcmd: 用于区分不同业务，有效数据：1~255之间
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
-subcmd: 用于区分不同业务，有效数据：1~255之间
 body: 客户端读到的最后一条消息，没有传空
 callback: jsonp回调函数，[可选]
 
@@ -64,20 +68,20 @@ callback: jsonp回调函数，[可选]
 
 ```
 ** 上行消息 **
-http://xxx.xxx.com?cmd=4&rid=xxx&uid=xxx&sid=xxx&subcmd=xxx&body=xxx&callback=xxx
+http://xxx.xxx.com?cmd=4&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xxx
 Request Method: get or post
 请求参数说明:
 cmd: 固定为4
+subcmd: 用于区分不同业务，有效数据：1~255之间
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
-subcmd: 用于区分不同业务，有效数据：1~255之间
 body: 客户端上传内容
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
 [callback(][json body][)]
-示例如下: cb({"body":"","cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+示例如下: cb({"body":"","cmd":"4","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
 ```
 
 > test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
@@ -134,6 +138,7 @@ Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 注1：上行数据包长度，即Length大小，限制4096字节内（可配置），下行不限
 注2：当connsvr服务处理异常，比如调用后端服务失败，返回给client的数据包，Cmd：0xff
 注3：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表
+注4：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的subcmd，立马返回消息列表
 ```
 
 * 后端push协议格式(udp)
@@ -156,7 +161,7 @@ Ext: 扩展字段，目前支持如下：
     "MsgId": “1234” // 标识本条消息id      
     "GetMsgKind": 1 // 1: 推送通知，然后客户端主动拉后端服务 2: 推送整条消息，客户端不用拉（默认） 3: 推送通知，然后客户端来connsvr拉消息   
 }
-注：数据包长度限制50k内
+注1：数据包长度限制50k内
 ```
 
 ## 使用方法
