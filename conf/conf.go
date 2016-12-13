@@ -126,14 +126,16 @@ func remoteConf() {
 				continue
 			}
 
-			v := &Var{}
-			err = json.Unmarshal(body, v)
+			var v *Var
+			err = json.Unmarshal(body, &v)
 			if err != nil {
 				clog.Error("remoteConf() json.Unmarshal error, err: %v, body: %s", err, body)
 				continue
 			}
 
-			V.Set(v)
+			if v != nil {
+				V.Set(v)
+			}
 		}
 	}()
 }
