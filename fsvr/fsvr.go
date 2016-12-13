@@ -81,33 +81,20 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 			}
 		}
 		if enterBody != nil {
-			if enterBody.NeedMsgs {
-				if mixSubcmd := enterBody.MixSubcmd; len(mixSubcmd) > 0 {
-					mixBody := map[byte][]string{}
-					for subcmd, msgId := range mixSubcmd {
-						msg.SetSubcmd(subcmd)
-						bodys := room.ML.Bodys(msgId, msg)
-						if len(bodys) > 0 {
-							mixBody[subcmd] = bodys
-						}
-					}
-
-					if len(mixBody) > 0 {
-						bs, _ := json.Marshal(mixBody)
-						msg.SetBody(string(bs))
-						msg.SetCmd(comm.MSGS)
-						connWrap.Write(msg)
-					}
-				} else {
-					msgId := enterBody.MsgId
-					bodys := room.ML.Bodys(msgId, msg)
-					if len(bodys) > 0 {
-						bs, _ := json.Marshal(bodys)
-						msg.SetBody(string(bs))
-						msg.SetCmd(comm.MSGS)
-						connWrap.Write(msg)
-					}
+			mixBodys := map[byte][]string{}
+			for subcmd, msgId := range enterBody.MsgIds {
+				msg.SetSubcmd(subcmd)
+				bodys := room.ML.Bodys(msgId, msg)
+				if len(bodys) > 0 {
+					mixBodys[subcmd] = bodys
 				}
+			}
+
+			if len(mixBodys) > 0 {
+				bs, _ := json.Marshal(mixBodys)
+				msg.SetBody(string(bs))
+				msg.SetCmd(comm.MSGS)
+				connWrap.Write(msg)
 			}
 		}
 		return true
@@ -205,12 +192,22 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 				return false
 			}
 		}
-		msgId := ""
-		if msgsBody != nil {
-			msgId = msgsBody.MsgId
+
+		if msgsBody == nil || len(msgsBody.MsgIds) == 0 {
+			clog.Error("fsvr:dispatchCmd() body error, data: %s", msg.Body())
+			return false
 		}
-		bodys := room.ML.Bodys(msgId, msg)
-		bs, _ := json.Marshal(bodys)
+
+		mixBodys := map[byte][]string{}
+		for subcmd, msgId := range msgsBody.MsgIds {
+			msg.SetSubcmd(subcmd)
+			bodys := room.ML.Bodys(msgId, msg)
+			if len(bodys) > 0 {
+				mixBodys[subcmd] = bodys
+			}
+		}
+
+		bs, _ := json.Marshal(mixBodys)
 		msg.SetBody(string(bs))
 		connWrap.Write(msg)
 		return true
