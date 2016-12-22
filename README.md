@@ -59,6 +59,20 @@ callback: jsonp回调函数，[可选]
 ```
 
 ```
+** 退出房间 **
+http://xxx.xxx.com?cmd=3&rid=xxx&uid=xxx&sid=xxx
+Request Method: get or post
+请求参数说明:
+cmd: 固定为3
+rid: 房间号
+uid: 用户id
+sid: session_id，区分同一uid不同连接，[可选]
+
+返回数据说明：
+无
+```
+
+```
 ** 拉取消息 **
 http://xxx.xxx.com?cmd=5&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xxx
 Request Method: get or post
@@ -94,7 +108,9 @@ callback: jsonp回调函数，[可选]
 
 返回数据说明：
 [callback(][json body][)]
-示例如下: cb({"body":"","cmd":"4","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+示例如下: cb({"body":"","cmd":"4","rid":"r1","sid":"","subcmd":"1","uid":"r2"})
+
+注1：当connsvr服务处理异常，比如调用后端服务失败，返回如下：cb({"body":"","cmd":"-1","rid":"r1","sid":"","subcmd":"1","uid":"r2"})
 ```
 
 > test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
@@ -126,8 +142,8 @@ Cmd: 1个字节，
   * 0x06：推送消息
   * 0xff：标识服务异常
 Subcmd: 1个字节，路由不同的后端接口，见conf/conf.json pubs和msgs节点，
-  * pubs代表上行消息配置，中转给业务方数据示例如下：uid=u1&rid=r1&cmd=99&subcmd=1&body=hello，直接把后端返回传回client
-  * msgs代表拉消息列表配置，中转给业务方数据示例如下：uid=u1&rid=r1&cmd=99&subcmd=0，返回给client示例如下：["xxx", "yyy"]
+  * pubs代表上行消息配置，中转给业务方数据示例如下：uid=u1&sid=s1&rid=r1&cmd=4&subcmd=1&body=xxx，直接把后端返回作为body内容传回给client
+  * msgs代表拉消息列表配置，中转给业务方数据示例如下：uid=u1&sid=s1&rid=r1&cmd=5&subcmd=1，返回给client的body内容示例如下：{"1":["hello world"]}
 UidLen: 1个字节，代表Uid长度
 Uid: 用户id，对于app，可以是设备id，对于浏览器，可以是登陆用户id
 SidLen: 1个字节，代表Sid长度
@@ -182,7 +198,7 @@ Ext: 扩展字段，目前支持如下：
 }
 注1：数据包长度限制50k内
 注2：当Ext.MsgId每次传相同id，比如“1”，connsvr消息列表只会缓存最新的唯一的一条消息
-注3：当Ext.MsgId每次空id: “”，connsvr消息列表不会缓存任何消息
+注3：当Ext.MsgId每次传空id: “”，connsvr消息列表不会缓存任何消息
 ```
 
 ## 使用方法

@@ -147,20 +147,18 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 		}
 
 		for _, m := range ms {
-			a = append(a, &MsgElem{
-				id:   m.MsgId,
-				body: m.Body,
-				uid:  m.Uid,
-				sid:  m.Sid,
-			})
+			msg := proto.NewMsg(comm.UDP)
+			msg.SetBody(m.Body)
+			msg.SetUid(m.Uid)
+			msg.SetSid(m.Sid)
+			a.Append(m.MsgId, msg)
 		}
 
 		// 当后端也没有数据时，放一个空数据，避免下次再次拉取
 		if len(a) == 0 {
-			a = append(a, &MsgElem{})
+			msg := proto.NewMsg(comm.UDP)
+			a.Append("", msg)
 		}
-
-		a.SetLc(msg)
 	}
 
 	i := sort.Search(len(a), func(i int) bool { return a[i].id > id })
