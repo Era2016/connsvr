@@ -41,21 +41,19 @@ http://xxx.xxx.com?cmd=2&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xx
 Request Method: get or post
 请求参数说明:
 cmd: 固定为2
-subcmd: 用于区分不同业务，有效数据：1~255之间
+subcmd: 用于区分不同业务，有效数据：0
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
 body: 支持如下：(可以传空串）
 {
-	NeedMsgs  bool            // 是否需要在enter时就返回未读消息
-	MixSubcmd map[byte]string // 混合业务命令字(优先级要高于Subcmd), key: subcmd, value: msgid
-	MsgId     string          // 本地读到的最新消息id, 配合subcmd一起使用，当MixSubcmd为空时才有效
+	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
 [callback(][json body][)]
-示例如下: cb({"body":["hello world"],"cmd":"2","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+示例如下: cb({"body":{"1":["hello world"]},"cmd":"2","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
 
 注1：如果服务端有用户未读消息，并且传入合适的subcmd，立马返回消息列表
 ```
@@ -66,19 +64,19 @@ http://xxx.xxx.com?cmd=5&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&callback=xx
 Request Method: get or post
 请求参数说明:
 cmd: 固定为5
-subcmd: 用于区分不同业务，有效数据：1~255之间
+subcmd: 用于区分不同业务，有效数据：0
 rid: 房间号
 uid: 用户id
 sid: session_id，区分同一uid不同连接，[可选]
 body: 支持如下：(可以传空串）
 {
-	MsgId string // 本地读到的最新消息id, 配合subcmd一起使用
+	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
 callback: jsonp回调函数，[可选]
 
 返回数据说明：
 [callback(][json body][)]
-示例如下: cb({"body":["hello world"],"cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
+示例如下: cb({"body":{"1":["hello world"]},"cmd":"5","rid":"r1","sid":"","subcmd":"0","uid":"r2"})
 ```
 
 ```
@@ -128,7 +126,7 @@ Cmd: 1个字节，
   * 0x06：推送消息
   * 0xff：标识服务异常
 Subcmd: 1个字节，路由不同的后端接口，见conf/conf.json pubs和msgs节点，
-  * pubs代表上行消息配置，中转给业务方数据示例如下：uid=u1&rid=r1&cmd=99&subcmd=0&body=hello，直接把后端返回传回client
+  * pubs代表上行消息配置，中转给业务方数据示例如下：uid=u1&rid=r1&cmd=99&subcmd=1&body=hello，直接把后端返回传回client
   * msgs代表拉消息列表配置，中转给业务方数据示例如下：uid=u1&rid=r1&cmd=99&subcmd=0，返回给client示例如下：["xxx", "yyy"]
 UidLen: 1个字节，代表Uid长度
 Uid: 用户id，对于app，可以是设备id，对于浏览器，可以是登陆用户id
@@ -154,13 +152,11 @@ Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 注2：当connsvr服务处理异常，比如调用后端服务失败，返回给client的数据包，Cmd：0xff
 注3：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表，body支持如下：
 {
-	MsgId string // 本地读到的最新消息id
+	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
 注4：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的body，立马返回消息列表, body支持如下：
 {
-	NeedMsgs  bool            // 是否需要在enter时就返回未读消息
-	MixSubcmd map[byte]string // 混合业务命令字(优先级要高于Subcmd), key: subcmd, value: msgid
-	MsgId     string          // 本地读到的最新消息id, 当MixSubcmd为空时才有效
+	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
 ```
 
@@ -169,7 +165,7 @@ Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 Cmd+Subcmd+UidLen+Uid+SidLen+Sid+RidLen+Rid+BodyLen+Body+ExtLen+Ext:
 
 Cmd: 1个字节，经由connsvr直接转发给client
-Subcmd: 1个字节，经由connsvr直接转发给client
+Subcmd: 1个字节，经由connsvr直接转发给client，有效范围: 1~255
 UidLen: 1个字节，代表Uid长度
 Uid: 指定排除的用户uid
 SidLen: 1个字节，代表Sid长度
@@ -181,8 +177,8 @@ Body: 和业务方对接，connsvr会中转给client
 ExtLen: 2个字节(网络字节序)，代表Ext长度
 Ext: 扩展字段，目前支持如下：
 {    
-    "MsgId": “1234” // 标识本条消息id      
-    "PushKind": 1 // 1: 推送通知，然后客户端主动拉后端服务 2: 推送整条消息，客户端不用拉（默认） 3: 推送通知，然后客户端来connsvr拉消息   
+    "MsgId": "1234" // 标识本条消息id      
+    "PushKind": 1 // 1: 推送通知，然后客户端主动拉connsvr或者后端服务 2: 推送整条消息，客户端不用拉（默认）
 }
 注1：数据包长度限制50k内
 注2：当Ext.MsgId每次传相同id，比如“1”，connsvr消息列表只会缓存最新的唯一的一条消息
