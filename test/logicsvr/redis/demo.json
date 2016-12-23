@@ -1,0 +1,20 @@
+{
+    "dev": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "addr": "127.0.0.1:40003"
+    },
+    "test": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "addr": "127.0.0.1:6379"
+    },
+    "prod": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "addr": "127.0.0.1:6379"
+    }
+}

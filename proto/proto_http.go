@@ -8,7 +8,6 @@ import (
 
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
-	"github.com/simplejia/connsvr/conf"
 
 	"fmt"
 )
@@ -83,7 +82,7 @@ func (msg *MsgHttp) Decode(buf *bufio.Reader) (ok bool) {
 	if len(rid) > 255 ||
 		len(uid) > 255 ||
 		len(sid) > 255 ||
-		len(body) > conf.C.Cons.BODY_LEN_LIMIT ||
+		len(body) > 65535 ||
 		len(callback) > 255 {
 		return false
 	}

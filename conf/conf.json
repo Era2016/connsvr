@@ -8,24 +8,23 @@
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长
-            "body_len_limit": 4096, // 包最大长度
             "u_map_num": 300, // 用户分组hash
             "room_msg_len": 10000, // 房间消息队列长度
             "c_rbuf": 512, // 读缓冲区大小
             "c_wbuf": 2048 // 写缓冲区大小
         },
         "varhost": { // 定时获取远程服务器最新配置，用于参数动态变更
-            "addr": "127.0.0.1:80",
+            "addr": "127.0.0.1:8089",
             "addrType": "ip",
-            "host": "xxx.xxx.com",
-            "cgi": "/c/a"
+            "host": "logicsvr.com",
+            "cgi": "/Demo/Var"
         },
         "pubs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Pub",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s&body=%s",
                 "method": "post",
                 "retry": 0,
@@ -34,10 +33,10 @@
         },
         "msgs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Msg",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }
@@ -57,24 +56,23 @@
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长
-            "body_len_limit": 4096, // 包最大长度
             "u_map_num": 300, // 用户分组hash
             "room_msg_len": 10000, // 房间消息队列长度
             "c_rbuf": 512, // 读缓冲区大小
             "c_wbuf": 2048 // 写缓冲区大小
         },
         "varhost": {
-            "addr": "127.0.0.1:80",
+            "addr": "127.0.0.1:8089",
             "addrType": "ip",
-            "host": "xxx.xxx.com",
-            "cgi": "/c/a"
+            "host": "logicsvr.com",
+            "cgi": "/Demo/Var"
         },
         "pubs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Pub",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s&body=%s",
                 "method": "post",
                 "retry": 0,
@@ -83,10 +81,10 @@
         },
         "msgs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Msg",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }
@@ -106,24 +104,23 @@
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长
-            "body_len_limit": 4096, // 包最大长度
             "u_map_num": 300, // 用户分组hash
             "room_msg_len": 10000, // 房间消息队列长度
             "c_rbuf": 512, // 读缓冲区大小
             "c_wbuf": 2048 // 写缓冲区大小
         },
         "varhost": {
-            "addr": "127.0.0.1:80",
+            "addr": "127.0.0.1:8089",
             "addrType": "ip",
-            "host": "xxx.xxx.com",
-            "cgi": "/c/a"
+            "host": "logicsvr.com",
+            "cgi": "/Demo/Var"
         },
         "pubs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Pub",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s&body=%s",
                 "method": "post",
                 "retry": 0,
@@ -132,10 +129,10 @@
         },
         "msgs": {
             "1": {
-                "addr": "127.0.0.1:80",
+                "addr": "127.0.0.1:8089",
                 "addrType": "ip",
-                "host": "xxx.xxx.com",
-                "cgi": "/c/a",
+                "host": "logicsvr.com",
+                "cgi": "/Demo/Msg",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }

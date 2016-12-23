@@ -3,13 +3,10 @@ package procs
 import (
 	"encoding/json"
 	"log"
-	"net"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/api"
-	"github.com/simplejia/connsvr/comm"
-	"github.com/simplejia/connsvr/proto"
+	"github.com/simplejia/connsvr/test/clog"
 )
 
 func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) {
@@ -48,37 +45,7 @@ func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) 
 
 	clog.Info("ConnPushHandler() ips: %v, pushMsg: %+v", ips, pushMsg)
 
-	msg := proto.NewMsg(comm.UDP)
-	msg.SetCmd(pushMsg.Cmd)
-	msg.SetSubcmd(pushMsg.Subcmd)
-	msg.SetUid(pushMsg.Uid)
-	msg.SetSid(pushMsg.Sid)
-	msg.SetRid(pushMsg.Rid)
-	msg.SetBody(pushMsg.Body)
-	if pushMsg.Ext != nil {
-		ext_bs, _ := json.Marshal(pushMsg.Ext)
-		msg.SetExt(string(ext_bs))
-	}
-	data, ok := msg.Encode()
-	if !ok {
-		clog.Error("ConnPushHandler() msg encode error, msg: %+v", msg)
-		return
-	}
-
-	for _, ipport := range ips {
-		conn, err := net.Dial("udp", ipport)
-		if err != nil {
-			clog.Error("ConnPushHandler() dial ipport: %s, error: %v", ipport, err)
-			continue
-		}
-		defer conn.Close()
-
-		_, err = conn.Write(data)
-		if err != nil {
-			clog.Error("ConnPushHandler() conn.Write ipport: %s, error: %v", ipport, err)
-			continue
-		}
-	}
+	api.PushRaw(pushMsg, ips)
 
 	return
 }

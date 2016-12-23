@@ -1,0 +1,20 @@
+{
+    "dev": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "dsn": "root:@tcp(127.0.0.1:40001)/demo?charset=latin1&allowOldPasswords=1&loc=Asia%2FShanghai&parseTime=true&columnsWithAlias=false"
+    },
+    "test": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "dsn": "root:@tcp(127.0.0.1:3306)/demo?charset=latin1&allowOldPasswords=1&loc=Asia%2FShanghai&parseTime=true&columnsWithAlias=false"
+    },
+    "prod": {
+        "connMaxLifetime": "1m",
+        "maxIdleConns": 10,
+        "maxOpenConns": 100,
+        "dsn": "root:@tcp(127.0.0.1:3306)/demo?charset=latin1&allowOldPasswords=1&loc=Asia%2FShanghai&parseTime=true&columnsWithAlias=false"
+    }
+}

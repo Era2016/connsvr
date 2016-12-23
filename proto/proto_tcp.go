@@ -7,7 +7,6 @@ import (
 
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
-	"github.com/simplejia/connsvr/conf"
 )
 
 const (
@@ -46,9 +45,6 @@ func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 	}
 
 	msg.length = int(binary.BigEndian.Uint16(length[:]))
-	if msg.length > conf.C.Cons.BODY_LEN_LIMIT {
-		return false
-	}
 
 	data := make([]byte, msg.length-3)
 	for m := 0; m < len(data); {

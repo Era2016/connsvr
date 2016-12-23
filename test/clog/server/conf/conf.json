@@ -1,0 +1,242 @@
+{
+    "dev": {
+        "port": 28702,
+        "tpl": { // 模板定义
+            "logerr_demo": [
+                {"handler": "filehandler"}, 
+                {
+                    "handler": "alarmhandler", 
+                    "params": {
+                        "sender": "connsvr", // 发送者id
+                        "receivers": ["simplejia"], // 接收者
+                        "excludes": [], // 正则，满足条件者不报警
+                        "includes": [".*"], // 正则，满足条件者报警
+                        "": null // placeholder
+                    }
+                }
+            ],
+            "logwar": [
+                {"handler": "filehandler"}
+            ],
+            "logdbg": [
+                {"handler": "filehandler"}
+            ],
+            "loginfo": [
+                {"handler": "filehandler"}
+            ]
+        },
+        "procs": {
+            "clog/logerr": "$logerr_demo",
+            "clog/logdbg": "$logdbg",
+            "clog/logwar": "$logwar",
+            "clog/loginfo": "$loginfo",
+
+            "cmonitor/logerr": "$logerr_demo",
+            "cmonitor/logdbg": "$logdbg",
+            "cmonitor/logwar": "$logwar",
+            "cmonitor/loginfo": "$loginfo",
+
+            "connsvr/logerr": "$logerr_demo",
+            "connsvr/logdbg": "$logdbg",
+            "connsvr/logwar": "$logwar",
+            "connsvr/loginfo": "$loginfo",
+
+            "connsvr/logbusi_report": [
+                {
+                    "handler": "connreporthandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+            "connsvr/logbusi_stat": [
+                {
+                    "handler": "connstathandler",
+                    "params": {}
+                }
+            ],
+
+            "logicsvr/logerr": "$logerr_demo",
+            "logicsvr/logdbg": "$logdbg",
+            "logicsvr/logwar": "$logwar",
+            "logicsvr/loginfo": "$loginfo",
+
+            "logicsvr/logbusi_push": [
+                {
+                    "handler": "connpushhandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+
+            "": null // placeholder
+        },
+        "clog": {
+            "mode": 3, // 0: none, 1: localfile, 2: clog (数字代表bit位)
+            "level": 14 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
+        },
+
+        "": null // placeholder
+    },
+    "test": {
+        "port": 28702,
+        "tpl": { // 模板定义
+            "logerr_demo": [
+                {"handler": "filehandler"}, 
+                {
+                    "handler": "alarmhandler", 
+                    "params": {
+                        "sender": "connsvr", // 发送者id
+                        "receivers": ["simplejia"], // 接收者
+                        "excludes": [], // 正则，满足条件者不报警
+                        "includes": [".*"], // 正则，满足条件者报警
+                        "": null // placeholder
+                    }
+                }
+            ],
+            "logwar": [
+                {"handler": "filehandler"}
+            ],
+            "logdbg": [
+                {"handler": "filehandler"}
+            ],
+            "loginfo": [
+                {"handler": "filehandler"}
+            ]
+        },
+        "procs": {
+            "clog/logerr": "$logerr_demo",
+            "clog/logdbg": "$logdbg",
+            "clog/logwar": "$logwar",
+            "clog/loginfo": "$loginfo",
+
+            "cmonitor/logerr": "$logerr_demo",
+            "cmonitor/logdbg": "$logdbg",
+            "cmonitor/logwar": "$logwar",
+            "cmonitor/loginfo": "$loginfo",
+
+            "connsvr/logerr": "$logerr_demo",
+            "connsvr/logdbg": "$logdbg",
+            "connsvr/logwar": "$logwar",
+            "connsvr/loginfo": "$loginfo",
+
+            "connsvr/logbusi_report": [
+                {
+                    "handler": "connreporthandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+            "connsvr/logbusi_stat": [
+                {
+                    "handler": "connstathandler",
+                    "params": {}
+                }
+            ],
+
+            "logicsvr/logerr": "$logerr_demo",
+            "logicsvr/logdbg": "$logdbg",
+            "logicsvr/logwar": "$logwar",
+            "logicsvr/loginfo": "$loginfo",
+
+            "logicsvr/logbusi_push": [
+                {
+                    "handler": "connpushhandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+
+            "": null // placeholder
+        },
+        "clog": {
+            "mode": 3, // 0: none, 1: localfile, 2: clog (数字代表bit位)
+            "level": 14 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
+        },
+
+        "": null // placeholder
+    },
+    "prod": {
+        "port": 28702,
+        "tpl": { // 模板定义
+            "logerr_demo": [
+                {"handler": "filehandler"}, 
+                {
+                    "handler": "alarmhandler", 
+                    "params": {
+                        "sender": "connsvr", // 发送者id
+                        "receivers": ["simplejia"], // 接收者
+                        "excludes": [], // 正则，满足条件者不报警
+                        "includes": [".*"], // 正则，满足条件者报警
+                        "": null // placeholder
+                    }
+                }
+            ],
+            "logwar": [
+                {"handler": "filehandler"}
+            ],
+            "logdbg": [
+                {"handler": "filehandler"}
+            ],
+            "loginfo": [
+                {"handler": "filehandler"}
+            ]
+        },
+        "procs": {
+            "clog/logerr": "$logerr_demo",
+            "clog/logdbg": "$logdbg",
+            "clog/logwar": "$logwar",
+            "clog/loginfo": "$loginfo",
+
+            "cmonitor/logerr": "$logerr_demo",
+            "cmonitor/logdbg": "$logdbg",
+            "cmonitor/logwar": "$logwar",
+            "cmonitor/loginfo": "$loginfo",
+
+            "connsvr/logerr": "$logerr_demo",
+            "connsvr/logdbg": "$logdbg",
+            "connsvr/logwar": "$logwar",
+            "connsvr/loginfo": "$loginfo",
+
+            "connsvr/logbusi_report": [
+                {
+                    "handler": "connreporthandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+            "connsvr/logbusi_stat": [
+                {
+                    "handler": "connstathandler",
+                    "params": {}
+                }
+            ],
+
+            "logicsvr/logerr": "$logerr_demo",
+            "logicsvr/logdbg": "$logdbg",
+            "logicsvr/logwar": "$logwar",
+            "logicsvr/loginfo": "$loginfo",
+
+            "logicsvr/logbusi_push": [
+                {
+                    "handler": "connpushhandler",
+                    "params": {
+                        "redis": {"addrtype": "ip", "addr": ":6379"}
+                    }
+                }
+            ],
+
+            "": null // placeholder
+        },
+        "clog": {
+            "mode": 2, // 0: none, 1: localfile, 2: clog (数字代表bit位)
+            "level": 14 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
+        },
+
+        "": null // placeholder
+    }
+}

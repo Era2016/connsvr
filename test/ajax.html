@@ -2,8 +2,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf8">
     <script type="text/javascript">
-      var xmlhttp;
-      var url = "http://connsvr.com:44392?cmd=2&subcmd=&rid=r1&uid=u1&sid="+Math.random()+"&body="
+      var rid = query("rid");
+      var uid = query("uid");
+
+      function query(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r!=null) return (r[2]); return null;
+      }
 
       function loadXMLDoc(url, cfunc) {
         if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -17,12 +23,22 @@
       }
 
       function myFunction() {
+        url = "http://connsvr.com:44392?cmd=2&subcmd=&rid="+rid+"&uid="+uid+"&sid=s1"+"&body=";
         loadXMLDoc(url, function() {
-          if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+          if (this.readyState==4 && this.status==200) {
             document.getElementById("myDiv").innerHTML = 
-                xmlhttp.responseText + "<br/><br/>refresh time: "+ (new Date()).toLocaleTimeString();
+                this.responseText + "<br/><br/>refresh time: "+ (new Date()).toLocaleTimeString();
 
             myFunction();
+          }
+        });
+      }
+
+      function send() {
+        url = "http://logicsvr.com:8089/Demo/Pub?rid="+rid+"&body="+document.getElementById("body").value;
+        loadXMLDoc(url, function() {
+          if (this.readyState==4 && this.status==200) {
+            document.getElementById("body").value = "";
           }
         });
       }
@@ -32,5 +48,7 @@
   </head>
   <body>
     <h2><div id="myDiv">msg here</div></h2>
+    <input id="body" type="text" style="width:500px" value=""/> 
+    <input type="button" value="发送" onclick="javascript:send();"/>
   </body>
 </html>

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/simplejia/clog"
+	"github.com/simplejia/connsvr/test/clog"
 )
 
 var connreportOnce sync.Once

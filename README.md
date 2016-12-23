@@ -114,18 +114,25 @@ callback: jsonp回调函数，[可选]
 ```
 
 > test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
-  1. 首先配置host: 127.0.0.1 connsvr.com
-  2. 启动connsvr: ./connsvr -env dev
-  3. 浏览器里打开ajax.html
-  4. 运行包含push消息的测试用例：go test -env dev -v -run=TestTcp
+  1. 首先配置host: 127.0.0.1 connsvr.com logicsvr.com
+  2. 启动redis-server: redis-server，监听端口用默认的6379
+  3. 启动connsvr: ./connsvr -env dev
+  4. 启动clog: cd test/clog/server; ./server -env dev 
+  5. 启动logicsvr: cd test/logicsvr; ./logicsvr -env dev 
+  6. 浏览器里打开ajax.html，可以在url里跟上参数：rid=xxx&uid=xxx，分别代表房间号和用户id，可以同时开两个tab，然后人别传入不同的uid，rid可以一样
+  7. 在文本框内输入字符，点"发送“
   
 > 经过上面几步，浏览器内容会更新成如下：
   ```
   {"body":"hello world","cmd":"99","ext":"{\"PushKind\":2}","rid":"r1","sid":"0.3209966821165452","subcmd":"0","uid":"u1"}  
   refresh time: 上午2:05:59
   ```
-  重复运行测试用例，你能看到消息在更新(refresh time显示的时间在变）
  
+注1：步骤3启动clog，是为了做消息分发，test/clog目录提供了一个定制的clog服务，clog服务来自：https://github.com/simplejia/clog 
+注2：步骤4启动logicsvr，是为了提供一个业务服务demo，用来做发消息后转发消息的，test/logicsvr目录提供了一个定制的demo服务，服务规范来自：https://github.com/simplejia/wsp
+注3：由于connsvr的ip上报是通过redis存储，所以需要启一个默认的redis-server
+注4：也可简单测试，这种方式就不能用到ajax.html提供的发送消息功能了，不用执行2，3，4，5步骤，仅运行包含push消息的测试用例：go test -env dev -v -run=TestTcp$
+
 
 * tcp自定义协议长连接（包括收包，回包）
 ```
@@ -164,13 +171,12 @@ Ext: 扩展字段:
 }
 Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 
-注1：上行数据包长度，即Length大小，限制4096字节内（可配置），下行不限
-注2：当connsvr服务处理异常，比如调用后端服务失败，返回给client的数据包，Cmd：0xff
-注3：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表，body支持如下：
+注1：当connsvr服务处理异常，比如调用后端服务失败，返回给client的数据包，Cmd：0xff
+注2：当Cmd为0x05时，客户端到connsvr拉取消息列表，当connsvr消息为空时，connsvr为根据conf/conf.json msgs节点配置路由到后端服务拉取消息列表，body支持如下：
 {
 	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
-注4：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的body，立马返回消息列表, body支持如下：
+注3：当Cmd为0x02时，如果服务端有用户未读消息，并且传入合适的body，立马返回消息列表, body支持如下：
 {
 	MsgIds map[byte]string // 混合业务命令字, key: subcmd, value: msgid
 }
@@ -205,7 +211,7 @@ Ext: 扩展字段，目前支持如下：
 * 配置文件：[conf.json](http://github.com/simplejia/connsvr/tree/master/conf/conf.json) (json格式，支持注释)，可以通过传入自定义的env及conf参数来重定义配置文件里的参数，如：./connsvr -env dev -conf='app.hport=80;clog.mode=1'，多个参数用`;`分隔
 * 建议用[cmonitor](http://github.com/simplejia/cmonitor)做进程启动管理
 * api文件夹提供的代码用于后端服务给connsvr推送消息的，实际是通过[clog](http://github.com/simplejia/clog)服务分发的
-* connsvr的上报数据，比如本机ip定期上报（用于更新待推送服务器列表），连接数、推送用时上报，等等，这些均是通过clog服务中转实现，所以我提供了clog的handler，均在testdata目录里：相应要修改clog的conf.json部分如下：
+* connsvr的上报数据，比如本机ip定期上报（用于更新待推送服务器列表），连接数、推送用时上报，等等，这些均是通过clog服务中转实现，所以我提供了clog的handler，可以在test/clog目录找到相关代码，具体用到clog配置，部分如下：(见test/clog/server/conf/conf.json)
 ```
 "connsvr/logbusi_report": [
     {
@@ -221,7 +227,7 @@ Ext: 扩展字段，目前支持如下：
         "params": {}
     }
 ],
-"demo/logbusi_push": [
+"logicsvr/logbusi_push": [
     {
         "handler": "connpushhandler",
         "params": {

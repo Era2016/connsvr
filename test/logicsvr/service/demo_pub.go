@@ -1,26 +1,23 @@
-package api
+package service
 
 import (
-	"testing"
-
-	"github.com/simplejia/clog"
+	"github.com/simplejia/connsvr/api"
 	"github.com/simplejia/connsvr/comm"
 )
 
-func TestPush(t *testing.T) {
-	clog.Init("logicsvr", "", 14, 2)
-
-	msg := &PushMsg{
+func (demo *Demo) Pub(rid, body string) (err error) {
+	msg := &api.PushMsg{
 		Cmd:    comm.PUSH,
 		Subcmd: 1,
 		Uid:    "",
 		Sid:    "",
-		Rid:    "r1",
-		Body:   "Hello World!",
+		Rid:    rid,
+		Body:   body,
 		Ext: &comm.PushExt{
 			MsgId:    "1",
 			PushKind: comm.DISPLAY,
 		},
 	}
-	Push(msg)
+	api.Push(msg)
+	return
 }

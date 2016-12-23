@@ -27,12 +27,11 @@ type Conf struct {
 		Bport int
 	}
 	Cons *struct {
-		BUF_SIZE       int // 一次读取数据大小, 大于大部分数据包长
-		BODY_LEN_LIMIT int // 包最大长度
-		U_MAP_NUM      int // 用户分组hash
-		ROOM_MSG_LEN   int // 房间消息队列长度
-		C_RBUF         int // 读缓冲区大小
-		C_WBUF         int // 写缓冲区大小
+		BUF_SIZE     int // 一次读取数据大小, 大于大部分数据包长
+		U_MAP_NUM    int // 用户分组hash
+		ROOM_MSG_LEN int // 房间消息队列长度
+		C_RBUF       int // 读缓冲区大小
+		C_WBUF       int // 写缓冲区大小
 	}
 	VarHost *struct {
 		Addr     string
