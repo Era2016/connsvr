@@ -124,14 +124,18 @@ callback: jsonp回调函数，[可选]
   
 > 经过上面几步，浏览器内容会更新成如下：
   ```
-  {"body":"hello world","cmd":"99","ext":"{\"PushKind\":2}","rid":"r1","sid":"0.3209966821165452","subcmd":"0","uid":"u1"}  
+  {"body":"hello world","cmd":"99","ext":"{\"PushKind\":2}","rid":"r1","sid":"0.3209966821165452","subcmd":"0","uid":"u1"}   
   refresh time: 上午2:05:59
   ```
- 
-注1：步骤3启动clog，是为了做消息分发，test/clog目录提供了一个定制的clog服务，clog服务来自：https://github.com/simplejia/clog 
-注2：步骤4启动logicsvr，是为了提供一个业务服务demo，用来做发消息后转发消息的，test/logicsvr目录提供了一个定制的demo服务，服务规范来自：https://github.com/simplejia/wsp
-注3：由于connsvr的ip上报是通过redis存储，所以需要启一个默认的redis-server
-注4：也可简单测试，这种方式就不能用到ajax.html提供的发送消息功能了，不用执行2，3，4，5步骤，仅运行包含push消息的测试用例：go test -env dev -v -run=TestTcp$
+
+> 注1：步骤3启动clog，是为了做消息分发，test/clog目录提供了一个定制的clog服务，clog服务来自：https://github.com/simplejia/clog
+
+> 注2：步骤4启动logicsvr，是为了提供一个业务服务demo，用来做发消息后转发消息的，test/logicsvr目录提供了一个定制的demo服务，服务规范来自：https://github.com/simplejia/wsp
+
+> 注3：由于connsvr的ip上报是通过redis存储，所以需要启一个默认的redis-server
+
+> 注4：也可简单测试，这种方式就不能用到ajax.html提供的发送消息功能了，不用执行2，3，4，5步骤，仅运行包含push消息的测试用例：go test -env dev -v -run=TestTcp$
+
 
 
 * tcp自定义协议长连接（包括收包，回包）
