@@ -10,28 +10,28 @@ import (
 	"github.com/simplejia/connsvr/test/clog"
 )
 
-var connreportOnce sync.Once
+var connReportOnce sync.Once
 
-func connreportTimer(connRedisAddr *ConnRedisAddr) {
+func connReportTimer(connRedisAddr *ConnRedisAddr) {
 	tick := time.Tick(time.Minute)
 	for {
 		select {
 		case <-tick:
 			addr, err := ConnRedisAddrFunc(connRedisAddr.AddrType, connRedisAddr.Addr)
 			if err != nil {
-				clog.Error("connreportTimer() ConnRedisAddrFunc error: %v", err)
+				clog.Error("connReportTimer() ConnRedisAddrFunc error: %v", err)
 				return
 			}
 
 			c, err := redis.Dial("tcp", addr)
 			if err != nil {
-				clog.Error("connreportTimer() redis.Dial error: %v", err)
+				clog.Error("connReportTimer() redis.Dial error: %v", err)
 				return
 			}
 			defer c.Close()
 
 			min, max := 0, time.Now().Add(-1*time.Minute*30).Unix()
-			c.Do("ZREMRANGEBYSCORE", "conn:report", min, max)
+			c.Do("ZREMRANGEBYSCORE", CONN_IPS_KEY, min, max)
 		}
 	}
 }
@@ -46,8 +46,8 @@ func ConnReportHandler(cate, subcate, body string, params map[string]interface{}
 		return
 	}
 
-	connreportOnce.Do(func() {
-		go connreportTimer(connRedisAddr)
+	connReportOnce.Do(func() {
+		go connReportTimer(connRedisAddr)
 	})
 
 	addr, err := ConnRedisAddrFunc(connRedisAddr.AddrType, connRedisAddr.Addr)
@@ -63,7 +63,7 @@ func ConnReportHandler(cate, subcate, body string, params map[string]interface{}
 	}
 	defer c.Close()
 
-	c.Do("ZADD", "conn:ips", time.Now().Unix(), body)
+	c.Do("ZADD", CONN_IPS_KEY, time.Now().Unix(), body)
 	return
 }
 

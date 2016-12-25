@@ -119,15 +119,9 @@ callback: jsonp回调函数，[可选]
   3. 启动connsvr: ./connsvr -env dev
   4. 启动clog: cd test/clog/server; ./server -env dev 
   5. 启动logicsvr: cd test/logicsvr; ./logicsvr -env dev 
-  6. 浏览器里打开ajax.html，可以在url里跟上参数：rid=xxx&uid=xxx，分别代表房间号和用户id，可以同时开两个tab，然后人别传入不同的uid，rid可以一样
+  6. 浏览器里打开ajax.html，可以在url里跟上参数：rid=xxx&uid=xxx&sid=xxx，分别代表房间号和用户id，用户session_id，可以同时开两个tab，然后人别传入不同的uid，rid可以一样
   7. 在文本框内输入字符，点"发送“
   
-> 经过上面几步，浏览器内容会更新成如下：
-  ```
-  {"body":"hello world","cmd":"99","ext":"{\"PushKind\":2}","rid":"r1","sid":"0.3209966821165452","subcmd":"0","uid":"u1"}   
-  refresh time: 上午2:05:59
-  ```
-
 > 注1：步骤3启动clog，是为了做消息分发，test/clog目录提供了一个定制的clog服务，clog服务来自：https://github.com/simplejia/clog
 
 > 注2：步骤4启动logicsvr，是为了提供一个业务服务demo，用来做发消息后转发消息的，test/logicsvr目录提供了一个定制的demo服务，服务规范来自：https://github.com/simplejia/wsp

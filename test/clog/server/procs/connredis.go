@@ -2,6 +2,8 @@ package procs
 
 import "fmt"
 
+const CONN_IPS_KEY = "conn:ips"
+
 type ConnRedisAddr struct {
 	AddrType string
 	Addr     string
