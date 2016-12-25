@@ -24,3 +24,6 @@ _testmain.go
 *.prof
 
 connsvr
+test/clog/server/logs
+test/clog/server/server
+test/logicsvr/logicsvr

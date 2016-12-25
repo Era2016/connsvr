@@ -114,7 +114,7 @@ callback: jsonp回调函数，[可选]
 ```
 
 > test文件夹有个ajax长轮询示例：ajax.html，使用方式如下：
-  1. 首先配置host: 127.0.0.1 connsvr.com logicsvr.com
+  1. 首先配置host: 127.0.0.1 connsvr.com [ip换成connsvr服务对应的ip]
   2. 启动redis-server: redis-server，监听端口用默认的6379
   3. 启动connsvr: ./connsvr -env dev
   4. 启动clog: cd test/clog/server; ./server -env dev 

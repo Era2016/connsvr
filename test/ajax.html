@@ -25,7 +25,7 @@
 
       var i = 1;
       function myFunction() {
-        url = "http://connsvr.com:44392?cmd=2&subcmd=&rid="+rid+"&uid="+uid+"&sid="+sid+"&body=";
+        url = "http://connsvr.com:44392?cmd=2&subcmd=0&rid="+rid+"&uid="+uid+"&sid="+sid+"&body=";
         loadXMLDoc(url, function() {
           if (this.readyState==4 && this.status==200) {
             document.getElementById("resp").value += i++ + ": " + this.responseText + " [uid:" + uid + " sid:" + sid + " time:" + (new Date()).toLocaleTimeString() + "]\n";
@@ -37,7 +37,7 @@
       }
 
       function send() {
-        url = "http://logicsvr.com:8089/Demo/Pub?rid="+rid+"&body="+document.getElementById("body").value;
+        url = "http://connsvr.com:44392?cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value;
         loadXMLDoc(url, function() {
           if (this.readyState==4) {
             if (this.status==200) {
