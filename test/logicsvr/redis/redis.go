@@ -20,6 +20,7 @@ type Conf struct {
 	MaxIdleConns    int
 	MaxOpenConns    int
 	Addr            string
+	AddrType        string
 }
 
 var (
@@ -28,6 +29,11 @@ var (
 	Env  string
 	C    *Conf
 )
+
+// 请赋值成自己的根据addrType, addr返回ip:port的函数
+var addrFunc = func(addrType, addr string) (string, error) {
+	return addr, nil
+}
 
 func parseRDFile(path string) {
 	fcontent, err := ioutil.ReadFile(path)
@@ -50,7 +56,10 @@ func parseRDFile(path string) {
 		MaxIdle:     C.MaxIdleConns,
 		IdleTimeout: time.Second * 240,
 		Dial: func() (c redis.Conn, err error) {
-			server := C.Addr
+			server, err := addrFunc(C.AddrType, C.Addr)
+			if err != nil {
+				return
+			}
 			c, err = redis.Dial("tcp", server,
 				redis.DialReadTimeout(time.Second*5),
 				redis.DialConnectTimeout(time.Second),

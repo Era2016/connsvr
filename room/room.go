@@ -55,7 +55,7 @@ func (a MsgList) SetLc(msg proto.Msg) {
 	lc.Set(key_lc, a, time.Minute)
 }
 
-func (a MsgList) Append(id string, msg proto.Msg) {
+func (a MsgList) Append(id string, msg proto.Msg) MsgList {
 	a, _ = a.GetLc(msg)
 
 	x := &MsgElem{
@@ -81,6 +81,8 @@ func (a MsgList) Append(id string, msg proto.Msg) {
 
 	sort.Sort(a)
 	a.SetLc(msg)
+
+	return a
 }
 
 // 请赋值成自己的根据addrType, addr返回ip:port的函数
@@ -147,17 +149,21 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 		}
 
 		for _, m := range ms {
-			msg := proto.NewMsg(comm.UDP)
-			msg.SetBody(m.Body)
-			msg.SetUid(m.Uid)
-			msg.SetSid(m.Sid)
-			a.Append(m.MsgId, msg)
+			_msg := proto.NewMsg(comm.UDP)
+			_msg.SetSubcmd(msg.Subcmd())
+			_msg.SetRid(msg.Rid())
+			_msg.SetUid(m.Uid)
+			_msg.SetSid(m.Sid)
+			_msg.SetBody(m.Body)
+			a = a.Append(m.MsgId, _msg)
 		}
 
 		// 当后端也没有数据时，放一个空数据，避免下次再次拉取
 		if len(a) == 0 {
-			msg := proto.NewMsg(comm.UDP)
-			a.Append("", msg)
+			_msg := proto.NewMsg(comm.UDP)
+			_msg.SetSubcmd(msg.Subcmd())
+			_msg.SetRid(msg.Rid())
+			a = a.Append("", _msg)
 		}
 	}
 

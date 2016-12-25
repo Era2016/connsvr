@@ -1,60 +1,66 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf8">
-    <script type="text/javascript">
-      var rid = query("rid");
-      var uid = query("uid");
-      var sid = query("sid");
-
-      function query(name) {
-        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
-        var r = window.location.search.substr(1).match(reg);
-        if (r!=null) return (r[2]); return null;
-      }
-
-      function loadXMLDoc(url, cfunc) {
-        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp = new XMLHttpRequest();
-        } else {// code for IE6, IE5
-            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange = cfunc;
-        xmlhttp.open("POST", url, true);
-        xmlhttp.send();
-      }
-
-      var i = 1;
-      function myFunction() {
-        url = "http://connsvr.com:44392?cmd=2&subcmd=0&rid="+rid+"&uid="+uid+"&sid="+sid+"&body=";
-        loadXMLDoc(url, function() {
-          if (this.readyState==4 && this.status==200) {
-            document.getElementById("resp").value += i++ + ": " + this.responseText + " -- " + (new Date()).toLocaleTimeString() + "\n";
-            document.getElementById("resp").scrollTop = document.getElementById("resp").scrollHeight;
-
-            myFunction();
-          }
-        });
-      }
-
-      function send() {
-        url = "http://connsvr.com:44392?cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value;
-        loadXMLDoc(url, function() {
-          if (this.readyState==4) {
-            if (this.status==200) {
-              document.getElementById("body").value = "";
-            } else {
-              alert("发送失败！");
-            }
-          }
-        });
-      }
-
-      myFunction()
-    </script>
   </head>
   <body style="text-align:center;">
     <textarea id="resp" cols=60 rows=30></textarea>
     <p></p>
     <textarea id="body" cols=60 rows=4 onkeydown="if(event.keyCode==13){send();return false;}">按下回车发送</textarea>
   </body>
+  
+  <script type="text/javascript">
+    var rid = query("rid");
+    var uid = query("uid");
+    var sid = query("sid");
+
+    function query(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+      var r = window.location.search.substr(1).match(reg);
+      if (r!=null) return (r[2]); return null;
+    }
+
+    function loadXMLDoc(url, cfunc) {
+      if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp = new XMLHttpRequest();
+      } else {// code for IE6, IE5
+          xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      xmlhttp.onreadystatechange = cfunc;
+      xmlhttp.open("POST", url, true);
+      xmlhttp.send();
+    }
+
+    var i = 1;
+    function myFunction() {
+      url = "http://connsvr.com:44392?cmd=2&subcmd=0&rid="+rid+"&uid="+uid+"&sid="+sid;
+      if (document.getElementById("resp").value == "") {
+        url += '&body={"MsgIds":{"1":""}}';
+      } else {
+        url += '&body=';
+      }
+      loadXMLDoc(url, function() {
+        if (this.readyState==4 && this.status==200) {
+          document.getElementById("resp").value += i++ + ": " + this.responseText + " -- " + (new Date()).toLocaleTimeString() + "\n\n";
+          document.getElementById("resp").scrollTop = document.getElementById("resp").scrollHeight;
+
+          myFunction();
+        }
+      });
+    }
+
+    function send() {
+      url = "http://connsvr.com:44392?cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value;
+      loadXMLDoc(url, function() {
+        if (this.readyState==4) {
+          if (this.status==200) {
+            document.getElementById("body").value = "";
+          } else {
+            alert("发送失败！");
+          }
+        }
+      });
+    }
+
+    myFunction()
+  </script>
 </html>

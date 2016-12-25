@@ -36,7 +36,7 @@
                 "addr": "127.0.0.1:8089",
                 "addrType": "ip",
                 "host": "logicsvr.com",
-                "cgi": "/Demo/Msg",
+                "cgi": "/Demo/Msgs",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }
@@ -84,7 +84,7 @@
                 "addr": "127.0.0.1:8089",
                 "addrType": "ip",
                 "host": "logicsvr.com",
-                "cgi": "/Demo/Msg",
+                "cgi": "/Demo/Msgs",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }
@@ -132,7 +132,7 @@
                 "addr": "127.0.0.1:8089",
                 "addrType": "ip",
                 "host": "logicsvr.com",
-                "cgi": "/Demo/Msg",
+                "cgi": "/Demo/Msgs",
                 "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
                 "timeout": "80ms"
             }
