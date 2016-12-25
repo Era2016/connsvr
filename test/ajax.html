@@ -28,7 +28,7 @@
         url = "http://connsvr.com:44392?cmd=2&subcmd=0&rid="+rid+"&uid="+uid+"&sid="+sid+"&body=";
         loadXMLDoc(url, function() {
           if (this.readyState==4 && this.status==200) {
-            document.getElementById("resp").value += i++ + ": " + this.responseText + " [uid:" + uid + " sid:" + sid + " time:" + (new Date()).toLocaleTimeString() + "]\n";
+            document.getElementById("resp").value += i++ + ": " + this.responseText + " -- " + (new Date()).toLocaleTimeString() + "\n";
             document.getElementById("resp").scrollTop = document.getElementById("resp").scrollHeight;
 
             myFunction();
