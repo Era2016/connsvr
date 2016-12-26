@@ -14,7 +14,7 @@
 
 using namespace std;
 
-const string g_module = "demo";
+const string g_module = "logicsvr";
 const string g_server_ip = "127.0.0.1";
 const int g_server_port = 28702;
 const string local_ip = "127.0.0.1"; // TODO: replace it with your localip
@@ -169,11 +169,11 @@ class Clog {
 
 int main()
 {
-    Clog *log_main = new Clog(g_module, "1");
-    log_main->Debug("dbg msg");
-    log_main->Warn("war msg");
-    log_main->Error("err msg");
-    log_main->Info("info msg");
-    log_main->Busi("push", "busi msg");
+    CONF.clog.mode = 2;
+
+    string json_msg = "{\"Cmd\":6, \"Subcmd\":1, \"Uid\":\"\", \"Sid\":\"\", \"Rid\":\"r1\", \"Body\":\"Hello World!\", \"Ext\":{\"MsgId\":\"1\", \"PushKind\":2}}";
+
+    Clog *log_main = new Clog(g_module, "");
+    log_main->Busi("push", json_msg.c_str());
     return 0;
 }

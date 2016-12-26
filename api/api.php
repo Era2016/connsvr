@@ -65,16 +65,25 @@ class CLog
     }   
 }
 
-$module = "demo";
+$module = "logicsvr";
 $ip = "127.0.0.1";
 $port = 28702;
 $level = 15;
 $localip = '127.0.0.1'; // TODO replace with your localip
 
 $clog = new CLog($ip, $port, $level, $localip, $module, "");
-$clog->Debug("dbg msg");
-$clog->Warn("war msg");
-$clog->Error("err msg");
-$clog->Info("info msg");
-$clog->Busi("sub", "busi msg");
+
+$msg = array(
+	"Cmd"=>6,
+	"Subcmd"=>1, 
+	"Uid"=>"",
+	"Sid"=>"",
+	"Rid"=>"r1",
+	"Body"=>"Hello World!",
+    "Ext"=>array(
+        "MsgId"=>"1",
+        "PushKind"=>2,
+    ),
+);
+$clog->Busi("push", json_encode($msg));
 
