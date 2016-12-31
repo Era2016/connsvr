@@ -139,7 +139,7 @@ Sbyte+Length+Cmd+Subcmd+UidLen+Uid+SidLen+Sid+RidLen+Rid+BodyLen+Body+ExtLen+Ext
 Sbyte: 1个字节，固定值：0xfa，标识数据包开始
 Length: 2个字节(网络字节序)，包括自身在内整个数据包的长度
 Cmd: 1个字节，
-  * 0x01：心跳 // 现在的技术方案用不到心跳
+  * 0x01：心跳包
   * 0x02：加入房间 
   * 0x03：退出房间 
   * 0x04：上行消息 

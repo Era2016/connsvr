@@ -58,7 +58,6 @@ var PubAddrFunc = func(addrType, addr string) (string, error) {
 func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 	switch msg.Cmd() {
 	case comm.PING:
-		// 现在的技术方案用不到心跳
 		return true
 	case comm.ENTER:
 		// 不同用户不能复用同一个连接, 新用户替代老用户数据

@@ -21,6 +21,8 @@ type ConnWrap struct {
 
 // return false will close the conn
 func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
+	connWrap.C.SetReadDeadline(time.Now().Add(time.Hour))
+
 	msg := proto.NewMsg(connWrap.T)
 	if !msg.Decode(connWrap.Buf) {
 		return nil, false
@@ -35,9 +37,8 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 		return true
 	}
 
-	// 这里需要设置写超时，因为缓冲区会满，有了超时就不至于导致房间处理goroutine阻塞
-	connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
 	for m := 0; m < len(data); {
+		connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
 		n, err := connWrap.C.Write(data[m:])
 		if err != nil || n <= 0 {
 			return false
