@@ -45,14 +45,9 @@ func TestMsgsHttp(t *testing.T) {
 	}
 	pushExt_bs, _ := json.Marshal(pushExt)
 	msg.SetExt(string(pushExt_bs))
-	data, ok := msg.Encode()
+	ok := msg.Encode(conn, nil)
 	if !ok {
 		t.Fatal("msg.Encode() error")
-	}
-
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
 	}
 
 	time.Sleep(time.Millisecond)

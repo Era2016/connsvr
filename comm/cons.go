@@ -29,6 +29,7 @@ const (
 	TCP PROTO = iota + 1 //1
 	HTTP
 	UDP
+	WS
 )
 
 const (

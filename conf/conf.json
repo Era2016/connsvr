@@ -4,7 +4,8 @@
             "name": "connsvr",
             "tport": 44391,
             "hport": 44392,
-            "bport": 44393
+            "wport": 44393,
+            "bport": 44394
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长
@@ -52,7 +53,8 @@
             "name": "connsvr",
             "tport": 44391,
             "hport": 44392,
-            "bport": 44393
+            "wport": 44393,
+            "bport": 44394
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长
@@ -100,7 +102,8 @@
             "name": "connsvr",
             "tport": 44391,
             "hport": 44392,
-            "bport": 44393
+            "wport": 44393,
+            "bport": 44394
         },
         "cons": {
             "buf_size": 128, // 一次读取数据大小, 大于大部分数据包长

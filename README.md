@@ -2,6 +2,7 @@
 ## 功能
 * 支持tcp自定义协议长连接（见下文）
 * 支持http协议长连接（long poll机制，ajax挂上去后等待数据返回）
+* 支持websocket, 请参考test/ws.html，和http long poll交互类似
 * 每个用户建立一个连接，每个连接唯一对应一个用户，用户可以同时加入多个房间
 * 推送数据时，可以不给房间内特定的一个用户推数据，适用于：前端假写数据，长连接服务帮过滤掉这条消息
 * 接收到上行数据后，同步转发给相应业务处理服务，可通过conf/conf.json配置pubs节点，connsvr将数据通过http方式路由到后端业务处理服务，然后透传结果到客户端
@@ -129,6 +130,8 @@ callback: jsonp回调函数，[可选]
 > 注3：由于connsvr的ip上报是通过redis存储，所以需要启一个默认的redis-server
 
 > 注4：也可简单测试，这种方式就不能用到ajax.html提供的发送消息功能了，不用执行2，3，4，5步骤，仅运行包含push消息的测试用例：go test -env dev -v -run=TestTcp$
+
+> 注5：test文件夹下有个websocket的示例：ws.html，使用方法和http支持类似，请参照ajax.html测试步骤
 
 
 

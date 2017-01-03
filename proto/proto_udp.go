@@ -1,7 +1,9 @@
 package proto
 
 import (
+	"bufio"
 	"encoding/binary"
+	"net"
 	"runtime/debug"
 
 	"github.com/simplejia/clog"
@@ -12,12 +14,19 @@ type MsgUdp struct {
 	MsgComm
 }
 
-func (msg *MsgUdp) DecodeBytes(data []byte) (ok bool) {
+func (msg *MsgUdp) Decode(br *bufio.Reader, conn net.Conn, misc interface{}) bool {
 	defer func() {
 		if err := recover(); err != nil {
 			clog.Error("MsgUdp:Decode() recover err: %v, stack: %s", err, debug.Stack())
 		}
 	}()
+
+	data := make([]byte, 1024*50)
+	n, err := conn.Read(data)
+	if err != nil {
+		return false
+	}
+	data = data[:n]
 
 	pos := 0
 	msg.cmd = comm.CMD(data[pos])
@@ -47,7 +56,7 @@ func (msg *MsgUdp) DecodeBytes(data []byte) (ok bool) {
 	return true
 }
 
-func (msg *MsgUdp) Encode() ([]byte, bool) {
+func (msg *MsgUdp) Encode(conn net.Conn, misc interface{}) bool {
 	data := []byte{}
 	data = append(data, byte(msg.cmd))
 	data = append(data, msg.subcmd)
@@ -64,5 +73,10 @@ func (msg *MsgUdp) Encode() ([]byte, bool) {
 	binary.BigEndian.PutUint16(data[len(data)-2:len(data)], uint16(len(msg.ext)))
 	data = append(data, msg.ext...)
 
-	return data, true
+	_, err := conn.Write(data)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

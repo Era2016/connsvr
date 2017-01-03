@@ -42,9 +42,9 @@ func Fserver(host string, t comm.PROTO) {
 		c.SetWriteBuffer(conf.C.Cons.C_WBUF)
 
 		connWrap := &conn.ConnWrap{
-			T:   t,
-			C:   c,
-			Buf: bufio.NewReaderSize(c, conf.C.Cons.BUF_SIZE),
+			T:  t,
+			C:  c,
+			BR: bufio.NewReaderSize(c, conf.C.Cons.BUF_SIZE),
 		}
 		go frecv(connWrap)
 	}
@@ -68,7 +68,6 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		}
 		connWrap.Uid = msg.Uid()
 		connWrap.Sid = msg.Sid()
-		connWrap.Misc = msg.Misc()
 		room.RM.Add(msg.Rid(), connWrap)
 
 		enterBody := &comm.EnterBody{}

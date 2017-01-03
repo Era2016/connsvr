@@ -45,14 +45,9 @@ func TestMsgsTcp(t *testing.T) {
 	}
 	pushExt_bs, _ := json.Marshal(pushExt)
 	msg.SetExt(string(pushExt_bs))
-	data, ok := msg.Encode()
+	ok := msg.Encode(conn, nil)
 	if !ok {
 		t.Fatal("msg.Encode() error")
-	}
-
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
 	}
 
 	time.Sleep(time.Millisecond)
@@ -77,18 +72,13 @@ func TestMsgsTcp(t *testing.T) {
 	}
 	msgsBody_bs, _ := json.Marshal(msgsBody)
 	msg.SetBody(string(msgsBody_bs))
-	data, ok = msg.Encode()
+	ok = msg.Encode(conn, nil)
 	if !ok {
 		t.Fatal("msg.Encode() error")
 	}
 
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	_msg := new(proto.MsgTcp)
-	ok = _msg.Decode(bufio.NewReader(conn))
+	ok = _msg.Decode(bufio.NewReader(conn), nil, nil)
 	if !ok {
 		t.Fatal("_msg.DecodeHeader() error")
 	}

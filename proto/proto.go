@@ -3,6 +3,7 @@ package proto
 import (
 	"bufio"
 	"fmt"
+	"net"
 
 	"github.com/simplejia/connsvr/comm"
 )
@@ -24,10 +25,8 @@ type Msg interface {
 	SetBody(string)
 	Ext() string
 	SetExt(string)
-	Misc() interface{}
-	SetMisc(interface{})
-	Encode() ([]byte, bool)
-	Decode(*bufio.Reader) bool
+	Encode(net.Conn, interface{}) bool
+	Decode(*bufio.Reader, net.Conn, interface{}) bool
 }
 
 type MsgComm struct {
@@ -39,15 +38,6 @@ type MsgComm struct {
 	rid    string
 	body   string
 	ext    string
-	misc   interface{}
-}
-
-func (msg *MsgComm) SetMisc(misc interface{}) {
-	msg.misc = misc
-}
-
-func (msg *MsgComm) Misc() interface{} {
-	return msg.misc
 }
 
 func (msg *MsgComm) SetLength(length int) {
@@ -114,11 +104,11 @@ func (msg *MsgComm) SetRid(rid string) {
 	msg.rid = rid
 }
 
-func (msg *MsgComm) Encode() ([]byte, bool) {
-	return nil, false
+func (msg *MsgComm) Encode(net.Conn, interface{}) bool {
+	return false
 }
 
-func (msg *MsgComm) Decode(*bufio.Reader) bool {
+func (msg *MsgComm) Decode(*bufio.Reader, net.Conn, interface{}) bool {
 	return false
 }
 
@@ -130,6 +120,8 @@ func NewMsg(t comm.PROTO) Msg {
 		return new(MsgHttp)
 	case comm.UDP:
 		return new(MsgUdp)
+	case comm.WS:
+		return new(MsgWS)
 	default:
 		panic(fmt.Sprintf("NewMsg() not support proto: %v", t))
 	}

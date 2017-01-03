@@ -86,11 +86,6 @@ func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) 
 		bs, _ := json.Marshal(pushMsg.Ext)
 		msg.SetExt(string(bs))
 	}
-	data, ok := msg.Encode()
-	if !ok {
-		clog.Error("ConnPushHandler() msg encode error, msg: %+v", msg)
-		return
-	}
 
 	for _, ipport := range ips {
 		conn, err := net.Dial("udp", ipport)
@@ -100,9 +95,9 @@ func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) 
 		}
 		defer conn.Close()
 
-		_, err = conn.Write(data)
-		if err != nil {
-			clog.Error("ConnPushHandler() conn.Write ipport: %s, error: %v", ipport, err)
+		ok := msg.Encode(conn, nil)
+		if !ok {
+			clog.Error("ConnPushHandler() msg.Encode error, msg: %+v, ipport: %s", msg, ipport)
 			continue
 		}
 	}

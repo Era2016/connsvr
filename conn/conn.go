@@ -12,7 +12,7 @@ import (
 type ConnWrap struct {
 	T    comm.PROTO    // 消息类型
 	C    net.Conn      // socket
-	Buf  *bufio.Reader // bufio.NewReader(C)
+	BR   *bufio.Reader // bufio.NewReader(C)
 	Uid  string        // 用户
 	Sid  string        // session id，区分同一个用户不同连接
 	Rids []string      // 房间列表
@@ -24,27 +24,23 @@ func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
 	connWrap.C.SetReadDeadline(time.Now().Add(time.Hour))
 
 	msg := proto.NewMsg(connWrap.T)
-	if !msg.Decode(connWrap.Buf) {
+	ok := msg.Decode(connWrap.BR, connWrap.C, &connWrap.Misc)
+	if !ok {
 		return nil, false
 	}
+
 	return msg, true
 }
 
 // when return false, close the connection
 func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
-	data, ok := msg.Encode()
+	connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
+
+	ok := msg.Encode(connWrap.C, connWrap.Misc)
 	if !ok {
-		return true
+		return false
 	}
 
-	for m := 0; m < len(data); {
-		connWrap.C.SetWriteDeadline(time.Now().Add(time.Millisecond))
-		n, err := connWrap.C.Write(data[m:])
-		if err != nil || n <= 0 {
-			return false
-		}
-		m += n
-	}
 	return true
 }
 

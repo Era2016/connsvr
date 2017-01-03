@@ -3,6 +3,7 @@ package proto
 import (
 	"bufio"
 	"encoding/binary"
+	"net"
 	"runtime/debug"
 
 	"github.com/simplejia/clog"
@@ -18,7 +19,7 @@ type MsgTcp struct {
 	MsgComm
 }
 
-func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
+func (msg *MsgTcp) Decode(br *bufio.Reader, conn net.Conn, misc interface{}) bool {
 	defer func() {
 		if err := recover(); err != nil {
 			clog.Error("MsgTcp:Decode() recover err: %v, stack: %s", err, debug.Stack())
@@ -26,7 +27,7 @@ func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 	}()
 
 	for {
-		sbyte, err := buf.ReadByte()
+		sbyte, err := br.ReadByte()
 		if err != nil {
 			return false
 		}
@@ -37,7 +38,7 @@ func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 
 	length := [2]byte{}
 	for m := 0; m < len(length); {
-		n, err := buf.Read(length[m:])
+		n, err := br.Read(length[m:])
 		if err != nil || n <= 0 {
 			return false
 		}
@@ -48,7 +49,7 @@ func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 
 	data := make([]byte, msg.length-3)
 	for m := 0; m < len(data); {
-		n, err := buf.Read(data[m:])
+		n, err := br.Read(data[m:])
 		if err != nil || n <= 0 {
 			return false
 		}
@@ -88,7 +89,7 @@ func (msg *MsgTcp) Decode(buf *bufio.Reader) (ok bool) {
 	return true
 }
 
-func (msg *MsgTcp) Encode() ([]byte, bool) {
+func (msg *MsgTcp) Encode(conn net.Conn, misc interface{}) bool {
 	data := []byte{}
 	data = append(data, SBYTE)
 	data = append(data, make([]byte, 2)...)
@@ -109,5 +110,13 @@ func (msg *MsgTcp) Encode() ([]byte, bool) {
 	data = append(data, EBYTE)
 	binary.BigEndian.PutUint16(data[1:3], uint16(len(data)))
 
-	return data, true
+	for i := 0; i < len(data); {
+		n, err := conn.Write(data[i:])
+		if err != nil {
+			return false
+		}
+		i += n
+	}
+
+	return true
 }

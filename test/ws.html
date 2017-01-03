@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8">
+  </head>
+  <body style="text-align:center;">
+    <textarea id="resp" cols=60 rows=30></textarea>
+    <p></p>
+    <textarea id="body" cols=60 rows=4 onkeydown="if(event.keyCode==13){send();return false;}">按下回车发送</textarea>
+  </body>
+  
+  <script type="text/javascript">
+    var rid = query("rid");
+    var uid = query("uid");
+    var sid = query("sid");
+
+    var ws = new WebSocket("ws://connsvr.com:44393?cmd=2&subcmd=0&rid="+rid+"&uid="+uid+"&sid="+sid);
+
+    function query(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+      var r = window.location.search.substr(1).match(reg);
+      if (r!=null) return (r[2]); return null;
+    }
+
+    ws.onopen = function(evt) {
+    }
+    ws.onclose = function(evt) {
+      alert("WS CLOSED");
+    }
+    ws.onerror = function(evt) {
+      alert("WS ERROR: " + evt.data);
+    }
+
+    var i = 1;
+    ws.onmessage = function(evt) {
+      document.getElementById("resp").value += i++ + ": " + evt.data + " -- " + (new Date()).toLocaleTimeString() + "\n\n";
+      document.getElementById("resp").scrollTop = document.getElementById("resp").scrollHeight;
+    }
+
+    function send() {
+      data = "cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value;
+      ws.send(data);
+      document.getElementById("body").value = "";
+    }
+
+  </script>
+</html>

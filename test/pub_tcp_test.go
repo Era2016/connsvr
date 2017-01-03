@@ -34,18 +34,13 @@ func TestTcpPub(t *testing.T) {
 	msg.SetUid(uid)
 	msg.SetRid(rid)
 	msg.SetBody(text)
-	data, ok := msg.Encode()
+	ok := msg.Encode(conn, nil)
 	if !ok {
 		t.Fatal("msg.Encode() error")
 	}
 
-	_, err = conn.Write(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	_msg := new(proto.MsgTcp)
-	ok = _msg.Decode(bufio.NewReader(conn))
+	ok = _msg.Decode(bufio.NewReader(conn), nil, nil)
 	if !ok {
 		t.Fatal("_msg.DecodeHeader() error")
 	}

@@ -3,7 +3,9 @@ package proto
 import (
 	"bufio"
 	"encoding/json"
+	"net"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/simplejia/clog"
@@ -16,7 +18,7 @@ type MsgHttp struct {
 	MsgComm
 }
 
-func (msg *MsgHttp) Encode() ([]byte, bool) {
+func (msg *MsgHttp) Encode(conn net.Conn, misc interface{}) bool {
 	data, _ := json.Marshal(map[string]string{
 		"cmd":    strconv.Itoa(int(msg.cmd)),
 		"subcmd": strconv.Itoa(int(msg.subcmd)),
@@ -27,7 +29,7 @@ func (msg *MsgHttp) Encode() ([]byte, bool) {
 		"ext":    msg.ext,
 	})
 	var resp []byte
-	if callback, ok := msg.misc.(string); ok && callback != "" {
+	if callback, ok := misc.(string); ok && callback != "" {
 		resp = append(resp, callback...)
 		resp = append(resp, '(')
 		resp = append(resp, data...)
@@ -35,17 +37,27 @@ func (msg *MsgHttp) Encode() ([]byte, bool) {
 	} else {
 		resp = data
 	}
-	return []byte(
-		fmt.Sprintf("HTTP/1.1 200 OK\r\n"+
-			"Content-Type: application/json;charset=UTF-8\r\n"+
-			"Connection: Keep-Alive\r\n"+
-			"Content-Length: %d\r\n\r\n%s",
-			len(resp), resp,
-		)), true
+
+	resp = []byte(fmt.Sprintf("HTTP/1.1 200 OK\r\n"+
+		"Content-Type: application/json;charset=UTF-8\r\n"+
+		"Connection: Keep-Alive\r\n"+
+		"Content-Length: %d\r\n\r\n%s",
+		len(resp), resp,
+	))
+
+	for i := 0; i < len(resp); {
+		n, err := conn.Write(resp[i:])
+		if err != nil {
+			return false
+		}
+		i += n
+	}
+
+	return true
 }
 
-func (msg *MsgHttp) Decode(buf *bufio.Reader) (ok bool) {
-	req, err := http.ReadRequest(buf)
+func (msg *MsgHttp) Decode(br *bufio.Reader, conn net.Conn, misc interface{}) bool {
+	req, err := http.ReadRequest(br)
 	if err != nil {
 		clog.Warn("MsgHttp:ReadRequest() %v", err)
 		return false
@@ -93,12 +105,14 @@ func (msg *MsgHttp) Decode(buf *bufio.Reader) (ok bool) {
 	msg.uid = uid
 	msg.sid = sid
 	msg.body = body
-	msg.misc = callback
 
 	cliExt := &comm.CliExt{
 		Cookie: req.Header.Get("Cookie"),
 	}
 	ext_bs, _ := json.Marshal(cliExt)
 	msg.ext = string(ext_bs)
+
+	reflect.Indirect(reflect.ValueOf(misc)).Set(reflect.ValueOf(callback))
+
 	return true
 }

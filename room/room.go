@@ -314,7 +314,6 @@ func (roomMap *RoomMap) proc(i int) {
 				}
 
 				msg.SetExt(string(servExt_bs))
-				msg.SetMisc(connWrap.Misc)
 				if ok := connWrap.Write(msg); !ok {
 					connWrap.Close()
 					delete(rids_m, ukey)

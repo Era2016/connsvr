@@ -24,6 +24,7 @@ type Conf struct {
 		Name  string
 		Tport int
 		Hport int
+		Wport int
 		Bport int
 	}
 	Cons *struct {
