@@ -24,10 +24,10 @@
     ws.onopen = function(evt) {
     }
     ws.onclose = function(evt) {
-      alert("WS CLOSED");
+      document.getElementById("resp").value += "***WS CLOSED -- " + (new Date()).toLocaleTimeString() + "***\n\n";
     }
     ws.onerror = function(evt) {
-      alert("WS ERROR: " + evt.data);
+      document.getElementById("resp").value += "***WS ERROR: " + evt.data + " -- " + (new Date()).toLocaleTimeString() + "***\n\n";
     }
 
     var i = 1;
@@ -37,7 +37,7 @@
     }
 
     function send() {
-      data = "cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value;
+      data = "cmd=4&subcmd=1&rid="+rid+"&uid="+uid+"&sid="+sid+"&body="+document.getElementById("body").value+"&Cookie=";
       ws.send(data);
       document.getElementById("body").value = "";
     }

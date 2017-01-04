@@ -133,6 +133,8 @@ callback: jsonp回调函数，[可选]
 
 > 注5：test文件夹下有个websocket的示例：ws.html，使用方法和http支持类似，请参照ajax.html测试步骤
 
+> 注6：如果使用websocket模式，上传传输数据时，传cookie，请带上Cookie参数，如cmd=2&Cookie=xxx=yyy; 传输所有参数时请escape
+
 
 
 * tcp自定义协议长连接（包括收包，回包）
