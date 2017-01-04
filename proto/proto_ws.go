@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"runtime/debug"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/simplejia/clog"
@@ -73,6 +74,9 @@ func (msg *MsgWS) DecodeHS(br *bufio.Reader, conn net.Conn, misc interface{}) (*
 	}
 
 	upgrader := websocket.Upgrader{
+		ReadBufferSize:   128,
+		WriteBufferSize:  1,
+		HandshakeTimeout: time.Millisecond,
 		CheckOrigin: func(*http.Request) bool {
 			return true
 		},
