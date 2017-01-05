@@ -20,10 +20,14 @@ type MsgWS struct {
 	MsgComm
 }
 
-func (msg *MsgWS) Encode(conn net.Conn, misc interface{}) bool {
+func (msg *MsgWS) Encode(conn net.Conn, misc interface{}) (ok bool) {
 	defer func() {
 		if err := recover(); err != nil {
 			clog.Warn("MsgWS:Encode() recover err: %v, stack: %s", err, debug.Stack())
+			// TODO
+			// because of gorilla/websocket's Concurrency
+			// panic "concurrent write to websocket connection"
+			ok = true
 		}
 	}()
 
