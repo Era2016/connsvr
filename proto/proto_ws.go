@@ -21,16 +21,6 @@ type MsgWS struct {
 }
 
 func (msg *MsgWS) Encode(conn net.Conn, misc interface{}) (ok bool) {
-	defer func() {
-		if err := recover(); err != nil {
-			clog.Warn("MsgWS:Encode() recover err: %v, stack: %s", err, debug.Stack())
-			// TODO
-			// because of gorilla/websocket's Concurrency
-			// panic "concurrent write to websocket connection"
-			ok = true
-		}
-	}()
-
 	data, _ := json.Marshal(map[string]string{
 		"cmd":    strconv.Itoa(int(msg.cmd)),
 		"subcmd": strconv.Itoa(int(msg.subcmd)),
@@ -42,12 +32,31 @@ func (msg *MsgWS) Encode(conn net.Conn, misc interface{}) (ok bool) {
 	})
 
 	c := misc.(*websocket.Conn)
-	err := c.WriteMessage(websocket.TextMessage, data)
-	if err != nil {
-		return false
+	for i := 0; i < 2; i++ {
+		retry := false
+		func() {
+			defer func() {
+				if err := recover(); err != nil {
+					// NOTICE
+					// because of gorilla/websocket's Concurrency
+					// panic "concurrent write to websocket connection"
+					retry = true
+				}
+			}()
+
+			err := c.WriteMessage(websocket.TextMessage, data)
+			if err == nil {
+				ok = true
+			}
+			return
+		}()
+		if !retry {
+			break
+		}
+		time.Sleep(time.Nanosecond * 100)
 	}
 
-	return true
+	return
 }
 
 type Rsp struct {
