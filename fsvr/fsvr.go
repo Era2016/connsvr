@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -14,9 +13,8 @@ import (
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
-	"github.com/simplejia/connsvr/conn"
+	"github.com/simplejia/connsvr/core"
 	"github.com/simplejia/connsvr/proto"
-	"github.com/simplejia/connsvr/room"
 	"github.com/simplejia/utils"
 )
 
@@ -41,7 +39,7 @@ func Fserver(host string, t comm.PROTO) {
 		c.SetReadBuffer(conf.C.Cons.C_RBUF)
 		c.SetWriteBuffer(conf.C.Cons.C_WBUF)
 
-		connWrap := &conn.ConnWrap{
+		connWrap := &core.ConnWrap{
 			T:  t,
 			C:  c,
 			BR: bufio.NewReaderSize(c, conf.C.Cons.BUF_SIZE),
@@ -55,34 +53,33 @@ var PubAddrFunc = func(addrType, addr string) (string, error) {
 	return addr, nil
 }
 
-func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
+func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PING:
-		return true
 	case comm.ENTER:
 		// 不同用户不能复用同一个连接, 新用户替代老用户数据
 		if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
 			for _, rid := range connWrap.Rids {
-				room.RM.Del(rid, connWrap)
+				core.RM.Del(rid, connWrap)
 			}
 		}
 		connWrap.Uid = msg.Uid()
 		connWrap.Sid = msg.Sid()
-		room.RM.Add(msg.Rid(), connWrap)
+		core.RM.Add(msg.Rid(), connWrap)
 
 		enterBody := &comm.EnterBody{}
 		if body := msg.Body(); body != "" {
 			err := json.Unmarshal([]byte(body), enterBody)
 			if err != nil {
 				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, body)
-				return false
+				return
 			}
 		}
 
 		mixBodys := map[byte][]string{}
 		for subcmd, msgId := range enterBody.MsgIds {
 			msg.SetSubcmd(subcmd)
-			bodys := room.ML.Bodys(msgId, msg)
+			bodys := core.ML.Bodys(msgId, msg)
 			if len(bodys) > 0 {
 				mixBodys[subcmd] = bodys
 			}
@@ -94,21 +91,19 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 			msg.SetCmd(comm.MSGS)
 			connWrap.Write(msg)
 		}
-		return true
 	case comm.LEAVE:
-		room.RM.Del(msg.Rid(), connWrap)
-		return true
+		core.RM.Del(msg.Rid(), connWrap)
 	case comm.PUB:
 		subcmd := strconv.Itoa(int(msg.Subcmd()))
 		pub := conf.C.Pubs[subcmd]
 		if pub == nil {
 			clog.Error("fsvr:dispatchCmd() no expected subcmd: %s", subcmd)
-			return false
+			return
 		}
 		addr, err := PubAddrFunc(pub.AddrType, pub.Addr)
 		if err != nil {
 			clog.Error("fsvr:dispatchCmd() PubAddrFunc error: %v", err)
-			return true
+			return
 		}
 		arrs := []string{
 			strconv.Itoa(int(msg.Cmd())),
@@ -135,7 +130,7 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 			err := json.Unmarshal([]byte(ext), &cliExt)
 			if err != nil {
 				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, ext)
-				return false
+				return
 			}
 		}
 		if cliExt != nil {
@@ -179,21 +174,20 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 			msg.SetBody(string(body))
 		}
 		connWrap.Write(msg)
-		return true
 	case comm.MSGS:
 		msgsBody := &comm.MsgsBody{}
 		if body := msg.Body(); body != "" {
 			err := json.Unmarshal([]byte(body), msgsBody)
 			if err != nil {
 				clog.Error("fsvr:dispatchCmd() json.Unmarshal error: %v, data: %s", err, body)
-				return false
+				return
 			}
 		}
 
 		mixBodys := map[byte][]string{}
 		for subcmd, msgId := range msgsBody.MsgIds {
 			msg.SetSubcmd(subcmd)
-			bodys := room.ML.Bodys(msgId, msg)
+			bodys := core.ML.Bodys(msgId, msg)
 			if len(bodys) > 0 {
 				mixBodys[subcmd] = bodys
 			}
@@ -202,40 +196,21 @@ func dispatchCmd(connWrap *conn.ConnWrap, msg proto.Msg) bool {
 		bs, _ := json.Marshal(mixBodys)
 		msg.SetBody(string(bs))
 		connWrap.Write(msg)
-		return true
 	default:
 		clog.Warn("fsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())
-		return true
 	}
 
-	return true
+	return
 }
 
-func frecv(connWrap *conn.ConnWrap) {
-	defer func() {
-		if err := recover(); err != nil {
-			clog.Error("frecv() recover err: %v, stack: %s", err, debug.Stack())
-		}
-		connWrap.Close()
-		for _, rid := range connWrap.Rids {
-			room.RM.Del(rid, connWrap)
-		}
-	}()
-
+func frecv(connWrap *core.ConnWrap) {
 	for {
-		msg, ok := connWrap.Read()
-		clog.Debug("frecv() connWrap.Read %+v, %v", msg, ok)
-		if !ok {
-			return
-		}
-
+		msg := connWrap.Read()
 		if msg == nil {
-			continue
-		}
-
-		ok = dispatchCmd(connWrap, msg)
-		if !ok {
 			return
 		}
+
+		clog.Debug("frecv() connWrap.Read %+v", msg)
+		dispatchCmd(connWrap, msg)
 	}
 }

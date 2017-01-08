@@ -1,4 +1,4 @@
-package conn
+package core
 
 import (
 	"bufio"
@@ -20,16 +20,17 @@ type ConnWrap struct {
 }
 
 // return false will close the conn
-func (connWrap *ConnWrap) Read() (proto.Msg, bool) {
+func (connWrap *ConnWrap) Read() proto.Msg {
 	connWrap.C.SetReadDeadline(time.Now().Add(time.Hour))
 
 	msg := proto.NewMsg(connWrap.T)
 	ok := msg.Decode(connWrap.BR, connWrap.C, &connWrap.Misc)
 	if !ok {
-		return nil, false
+		connWrap.Close()
+		return nil
 	}
 
-	return msg, true
+	return msg
 }
 
 // when return false, close the connection
@@ -38,6 +39,7 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 
 	ok := msg.Encode(connWrap.C, connWrap.Misc)
 	if !ok {
+		connWrap.Close()
 		return false
 	}
 
@@ -47,4 +49,8 @@ func (connWrap *ConnWrap) Write(msg proto.Msg) bool {
 func (connWrap *ConnWrap) Close() {
 	// net.Conn可以多次关闭
 	connWrap.C.Close()
+
+	for _, rid := range connWrap.Rids {
+		RM.Del(rid, connWrap)
+	}
 }

@@ -73,17 +73,11 @@ func (rsp *Rsp) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 
 }
 
-func (msg *MsgWS) DecodeHS(br *bufio.Reader, conn net.Conn, misc interface{}) (*http.Request, bool) {
-	defer func() {
-		if err := recover(); err != nil {
-			clog.Warn("MsgWS:DecodeHS() recover err: %v, stack: %s", err, debug.Stack())
-		}
-	}()
-
+func (msg *MsgWS) DecodeHS(br *bufio.Reader, conn net.Conn, misc interface{}) *http.Request {
 	req, err := http.ReadRequest(br)
 	if err != nil {
 		clog.Warn("MsgWS:ReadRequest() %v", err)
-		return nil, false
+		return nil
 	}
 
 	upgrader := websocket.Upgrader{
@@ -99,21 +93,27 @@ func (msg *MsgWS) DecodeHS(br *bufio.Reader, conn net.Conn, misc interface{}) (*
 	c, err := upgrader.Upgrade(&Rsp{Conn: conn}, req, nil)
 	if err != nil {
 		clog.Warn("MsgWS:Upgrade() %v", err)
-		return nil, false
+		return nil
 	}
 
 	reflect.Indirect(reflect.ValueOf(misc)).Set(reflect.ValueOf(c))
 
-	return req, true
+	return req
 }
 
 func (msg *MsgWS) Decode(br *bufio.Reader, conn net.Conn, misc interface{}) bool {
+	defer func() {
+		if err := recover(); err != nil {
+			clog.Warn("MsgWS:Decode() recover err: %v, stack: %s", err, debug.Stack())
+		}
+	}()
+
 	var values url.Values
 
 	_misc := misc.(*interface{})
 	if *_misc == nil {
-		req, ok := msg.DecodeHS(br, conn, _misc)
-		if !ok {
+		req := msg.DecodeHS(br, conn, _misc)
+		if req == nil {
 			return false
 		}
 		req.ParseForm()

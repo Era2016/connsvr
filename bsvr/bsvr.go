@@ -3,8 +3,8 @@ package bsvr
 import (
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
+	"github.com/simplejia/connsvr/core"
 	"github.com/simplejia/connsvr/proto"
-	"github.com/simplejia/connsvr/room"
 
 	"net"
 )
@@ -35,7 +35,7 @@ func Bserver(host string) {
 func dispatchCmd(msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PUSH:
-		go room.RM.Push(msg)
+		go core.RM.Push(msg)
 	default:
 		clog.Error("bsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())
 	}
