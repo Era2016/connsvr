@@ -185,29 +185,29 @@ Ebyte: 1个字节，固定值：0xfb，标识数据包结束
 }
 ```
 
-* 后端push协议格式(udp)
+* 后端push协议格式(http)
 ```
-Cmd+Subcmd+UidLen+Uid+SidLen+Sid+RidLen+Rid+BodyLen+Body+ExtLen+Ext:
-
-Cmd: 1个字节，经由connsvr直接转发给client
-Subcmd: 1个字节，经由connsvr直接转发给client，有效范围: 1~255
-UidLen: 1个字节，代表Uid长度
-Uid: 指定排除的用户uid
-SidLen: 1个字节，代表Sid长度
-Sid: 指定排除的用户session_id，当没有传入Sid时，只匹配uid
-RidLen: 1个字节，代表Rid长度
-Rid: 房间id
-BodyLen: 2个字节(网络字节序)，代表Body长度
-Body: 和业务方对接，connsvr会中转给client
-ExtLen: 2个字节(网络字节序)，代表Ext长度
-Ext: 扩展字段，目前支持如下：
+http://ip:port?cmd=xxx&subcmd=xxx&rid=xxx&uid=xxx&sid=xxx&body=xxx&ext=xxx
+Request Method: get or post
+请求参数说明:
+cmd: 1个字节，经由connsvr直接转发给client, 目前支持： 6：推送消息
+subcmd: 1个字节，经由connsvr直接转发给client，有效范围: 1~255
+uid: 指定排除的用户uid
+sid: 指定排除的用户session_id，当没有传入sid时，只匹配uid
+rid: 房间id
+body: 和业务方对接，connsvr会中转给client
+ext: 扩展字段，目前支持如下：
 {    
     "MsgId": "1234" // 标识本条消息id      
     "PushKind": 1 // 1: 推送通知，然后客户端主动拉connsvr或者后端服务 2: 推送整条消息，客户端不用拉（默认）
 }
-注1：数据包长度限制50k内
-注2：当Ext.MsgId每次传相同id，比如“1”，connsvr消息列表只会缓存最新的唯一的一条消息
-注3：当Ext.MsgId每次传空id: “”，connsvr消息列表不会缓存任何消息
+注2：当ext.MsgId每次传相同id，比如“1”，connsvr消息列表只会缓存最新的唯一的一条消息
+注3：当ext.MsgId每次传空id: “”，connsvr消息列表不会缓存任何消息
+
+
+返回数据说明：
+json body
+示例如下: {"code": 0}
 ```
 
 ## 使用方法

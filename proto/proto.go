@@ -118,8 +118,8 @@ func NewMsg(t comm.PROTO) Msg {
 		return new(MsgTcp)
 	case comm.HTTP:
 		return new(MsgHttp)
-	case comm.UDP:
-		return new(MsgUdp)
+	case comm.SVR:
+		return new(MsgSvr)
 	case comm.WS:
 		return new(MsgWS)
 	default:

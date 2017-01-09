@@ -28,7 +28,7 @@ func (i PUSH_KIND) String() string {
 	return _PUSH_KIND_name[_PUSH_KIND_index[i]:_PUSH_KIND_index[i+1]]
 }
 
-const _PROTO_name = "TCPHTTPUDPWS"
+const _PROTO_name = "TCPHTTPSVRWS"
 
 var _PROTO_index = [...]uint8{0, 3, 7, 10, 12}
 

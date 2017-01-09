@@ -9,45 +9,38 @@ import (
 	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
-	"github.com/simplejia/connsvr/proto"
 	"github.com/simplejia/utils"
 
-	"net"
 	"testing"
 )
 
 func TestMsgsHttp(t *testing.T) {
-	cmd := comm.PUSH
 	subcmd := byte(1)
 	rid := "r1"
 	uid := "u_TestMsgsHttp"
 	text := "hello world"
 	msgId := "1"
 
-	conn, err := net.Dial(
-		"udp",
-		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-
-	msg := proto.NewMsg(comm.UDP)
-	msg.SetCmd(cmd)
-	msg.SetSubcmd(subcmd)
-	msg.SetRid(rid)
-	msg.SetUid(uid)
-	msg.SetBody(text)
 	pushExt := &comm.PushExt{
 		MsgId:    msgId,
 		PushKind: 0,
 	}
-	pushExt_bs, _ := json.Marshal(pushExt)
-	msg.SetExt(string(pushExt_bs))
-	ok := msg.Encode(conn, nil)
-	if !ok {
-		t.Fatal("msg.Encode() error")
+	ext_bs, _ := json.Marshal(pushExt)
+
+	gpp := &utils.GPP{
+		Uri: fmt.Sprintf("http://%s:%d", utils.LocalIp, conf.C.App.Bport),
+		Params: map[string]string{
+			"cmd":    strconv.Itoa(int(comm.PUSH)),
+			"subcmd": strconv.Itoa(int(subcmd)),
+			"rid":    rid,
+			"uid":    uid,
+			"body":   text,
+			"ext":    string(ext_bs),
+		},
+	}
+	_, err := utils.Post(gpp)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	time.Sleep(time.Millisecond)
@@ -57,7 +50,7 @@ func TestMsgsHttp(t *testing.T) {
 		MsgIds: msgIds,
 	}
 	msgsBody_bs, _ := json.Marshal(msgsBody)
-	gpp := &utils.GPP{
+	gpp = &utils.GPP{
 		Uri: fmt.Sprintf("http://:%d", conf.C.App.Hport),
 		Headers: map[string]string{
 			"Connection": "Close",

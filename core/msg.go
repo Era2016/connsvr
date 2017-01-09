@@ -142,7 +142,7 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 		}
 
 		for _, m := range ms {
-			_msg := proto.NewMsg(comm.UDP)
+			_msg := proto.NewMsg(comm.SVR)
 			_msg.SetSubcmd(msg.Subcmd())
 			_msg.SetRid(msg.Rid())
 			_msg.SetUid(m.Uid)
@@ -153,7 +153,7 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 
 		// 当后端也没有数据时，放一个空数据，避免下次再次拉取
 		if len(a) == 0 {
-			_msg := proto.NewMsg(comm.UDP)
+			_msg := proto.NewMsg(comm.SVR)
 			_msg.SetSubcmd(msg.Subcmd())
 			_msg.SetRid(msg.Rid())
 			a = a.Append("", _msg)

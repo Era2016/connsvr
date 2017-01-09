@@ -9,17 +9,14 @@ import (
 	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
-	"github.com/simplejia/connsvr/proto"
 	"github.com/simplejia/utils"
 
-	"net"
 	"sync"
 	"testing"
 	"time"
 )
 
 func TestWS(t *testing.T) {
-	cmd := comm.PUSH
 	rid := "r1"
 	uid := "u_TestWS"
 	sid := "s1"
@@ -54,7 +51,7 @@ func TestWS(t *testing.T) {
 		json.Unmarshal(resp, &m)
 
 		switch m["cmd"] {
-		case strconv.Itoa(int(cmd)):
+		case strconv.Itoa(int(comm.PUSH)):
 			if _uid := m["uid"]; _uid != uid {
 				t.Errorf("get: %s, expected: %s", _uid, uid)
 			}
@@ -83,29 +80,25 @@ func TestWS(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
-		conn, err := net.Dial(
-			"udp",
-			fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer conn.Close()
-
-		msg := proto.NewMsg(comm.UDP)
-		msg.SetCmd(cmd)
-		msg.SetUid("")
-		msg.SetSid("")
-		msg.SetRid(rid)
-		msg.SetBody(text)
 		pushExt := &comm.PushExt{
 			MsgId: "1",
 		}
 		ext_bs, _ := json.Marshal(pushExt)
-		msg.SetExt(string(ext_bs))
-		ok := msg.Encode(conn, nil)
-		if !ok {
-			t.Fatal("msg.Encode() error")
+
+		gpp := &utils.GPP{
+			Uri: fmt.Sprintf("http://%s:%d", utils.LocalIp, conf.C.App.Bport),
+			Params: map[string]string{
+				"cmd":  strconv.Itoa(int(comm.PUSH)),
+				"rid":  rid,
+				"uid":  "",
+				"sid":  "",
+				"body": text,
+				"ext":  string(ext_bs),
+			},
+		}
+		_, err := utils.Post(gpp)
+		if err != nil {
+			t.Fatal(err)
 		}
 	}()
 

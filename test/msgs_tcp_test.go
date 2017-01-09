@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	_ "github.com/simplejia/connsvr"
@@ -17,42 +18,37 @@ import (
 )
 
 func TestMsgsTcp(t *testing.T) {
-	cmd := comm.PUSH
 	subcmd := byte(1)
 	rid := "r1"
 	uid := "u_TestMsgsTcp"
 	text := "hello world"
 	msgId := "1"
 
-	conn, err := net.Dial(
-		"udp",
-		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Bport),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-
-	msg := proto.NewMsg(comm.UDP)
-	msg.SetCmd(cmd)
-	msg.SetSubcmd(subcmd)
-	msg.SetRid(rid)
-	msg.SetUid(uid)
-	msg.SetBody(text)
 	pushExt := &comm.PushExt{
 		MsgId:    msgId,
 		PushKind: 0,
 	}
-	pushExt_bs, _ := json.Marshal(pushExt)
-	msg.SetExt(string(pushExt_bs))
-	ok := msg.Encode(conn, nil)
-	if !ok {
-		t.Fatal("msg.Encode() error")
+	ext_bs, _ := json.Marshal(pushExt)
+
+	gpp := &utils.GPP{
+		Uri: fmt.Sprintf("http://%s:%d", utils.LocalIp, conf.C.App.Bport),
+		Params: map[string]string{
+			"cmd":    strconv.Itoa(int(comm.PUSH)),
+			"subcmd": strconv.Itoa(int(subcmd)),
+			"rid":    rid,
+			"uid":    uid,
+			"body":   text,
+			"ext":    string(ext_bs),
+		},
+	}
+	_, err := utils.Post(gpp)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	time.Sleep(time.Millisecond)
 
-	conn, err = net.Dial(
+	conn, err := net.Dial(
 		"tcp",
 		fmt.Sprintf("%s:%d", utils.LocalIp, conf.C.App.Tport),
 	)
@@ -61,7 +57,7 @@ func TestMsgsTcp(t *testing.T) {
 	}
 	defer conn.Close()
 
-	msg = proto.NewMsg(comm.TCP)
+	msg := proto.NewMsg(comm.TCP)
 	msg.SetCmd(comm.MSGS)
 	msg.SetSubcmd(0)
 	msg.SetUid("")
@@ -72,7 +68,7 @@ func TestMsgsTcp(t *testing.T) {
 	}
 	msgsBody_bs, _ := json.Marshal(msgsBody)
 	msg.SetBody(string(msgsBody_bs))
-	ok = msg.Encode(conn, nil)
+	ok := msg.Encode(conn, nil)
 	if !ok {
 		t.Fatal("msg.Encode() error")
 	}

@@ -3,15 +3,14 @@ package procs
 import (
 	"encoding/json"
 	"fmt"
-	"net"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/simplejia/connsvr/api"
-	"github.com/simplejia/connsvr/comm"
-	"github.com/simplejia/connsvr/proto"
 	"github.com/simplejia/connsvr/test/clog"
 	"github.com/simplejia/lm"
+	"github.com/simplejia/utils"
 )
 
 func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) {
@@ -75,29 +74,29 @@ func ConnPushHandler(cate, subcate, body string, params map[string]interface{}) 
 
 	clog.Info("ConnPushHandler() ips: %v, pushMsg: %+v", ips, pushMsg)
 
-	msg := proto.NewMsg(comm.UDP)
-	msg.SetCmd(pushMsg.Cmd)
-	msg.SetSubcmd(pushMsg.Subcmd)
-	msg.SetUid(pushMsg.Uid)
-	msg.SetSid(pushMsg.Sid)
-	msg.SetRid(pushMsg.Rid)
-	msg.SetBody(pushMsg.Body)
+	ext := ""
 	if pushMsg.Ext != nil {
 		bs, _ := json.Marshal(pushMsg.Ext)
-		msg.SetExt(string(bs))
+		ext = string(bs)
 	}
 
+	gpp := &utils.GPP{
+		Params: map[string]string{
+			"cmd":    strconv.Itoa(int(pushMsg.Cmd)),
+			"subcmd": strconv.Itoa(int(pushMsg.Subcmd)),
+			"rid":    pushMsg.Rid,
+			"uid":    pushMsg.Uid,
+			"sid":    pushMsg.Sid,
+			"body":   pushMsg.Body,
+			"ext":    ext,
+		},
+		Timeout: time.Millisecond * 50,
+	}
 	for _, ipport := range ips {
-		conn, err := net.Dial("udp", ipport)
+		gpp.Uri = fmt.Sprintf("http://%s", ipport)
+		_, err := utils.Post(gpp)
 		if err != nil {
-			clog.Error("ConnPushHandler() dial ipport: %s, error: %v", ipport, err)
-			continue
-		}
-		defer conn.Close()
-
-		ok := msg.Encode(conn, nil)
-		if !ok {
-			clog.Error("ConnPushHandler() msg.Encode error, msg: %+v, ipport: %s", msg, ipport)
+			clog.Error("ConnPushHandler() utils.Post error, gpp: %+v, ipport: %s", gpp, ipport)
 			continue
 		}
 	}

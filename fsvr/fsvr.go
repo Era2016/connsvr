@@ -56,12 +56,14 @@ var PubAddrFunc = func(addrType, addr string) (string, error) {
 func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PING:
+		return
 	case comm.ENTER:
 		// 不同用户不能复用同一个连接, 新用户替代老用户数据
 		if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
 			for _, rid := range connWrap.Rids {
 				core.RM.Del(rid, connWrap)
 			}
+			time.Sleep(time.Millisecond)
 		}
 		connWrap.Uid = msg.Uid()
 		connWrap.Sid = msg.Sid()

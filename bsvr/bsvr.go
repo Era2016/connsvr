@@ -1,41 +1,35 @@
 package bsvr
 
 import (
+	"net/http"
+
 	"github.com/simplejia/clog"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/core"
 	"github.com/simplejia/connsvr/proto"
-
-	"net"
 )
 
 func Bserver(host string) {
-	udpAddr, err := net.ResolveUDPAddr("udp", host)
-	if err != nil {
-		panic(err)
-	}
-	conn, err := net.ListenUDP("udp", udpAddr)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
-
-	for {
-		msg := proto.NewMsg(comm.UDP)
-		ok := msg.Decode(nil, conn, nil)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		msg := proto.NewMsg(comm.SVR)
+		ok := msg.Decode(nil, nil, r)
 		if !ok {
-			continue
+			w.Write([]byte(`{"code": -1}`))
+			return
 		}
 
-		clog.Debug("Bserver() msg.DecodeBytes %+v", msg)
+		clog.Debug("Bserver() msg.Decode %+v", msg)
 		dispatchCmd(msg)
-	}
+		w.Write([]byte(`{"code": 0}`))
+	})
+
+	clog.Error("Bserver() err: %v", http.ListenAndServe(host, nil))
 }
 
 func dispatchCmd(msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PUSH:
-		go core.RM.Push(msg)
+		core.RM.Push(msg)
 	default:
 		clog.Error("bsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())
 	}
