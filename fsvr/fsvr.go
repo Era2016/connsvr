@@ -56,7 +56,7 @@ var PubAddrFunc = func(addrType, addr string) (string, error) {
 func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	switch msg.Cmd() {
 	case comm.PING:
-		return
+		connWrap.Write(msg)
 	case comm.ENTER:
 		// 不同用户不能复用同一个连接
 		if connWrap.Uid != "" {
