@@ -63,16 +63,17 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	case comm.PING:
 		connWrap.Write(msg)
 	case comm.ENTER:
-		// 不同用户不能复用同一个连接
-		if connWrap.Uid != "" {
+		if connWrap.Uid == "" {
+			connWrap.Uid = msg.Uid()
+			connWrap.Sid = msg.Sid()
+		} else {
+			// 不同用户不能复用同一个连接
 			if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
 				connWrap.Close()
 				return
 			}
 		}
 
-		connWrap.Uid = msg.Uid()
-		connWrap.Sid = msg.Sid()
 		core.RM.Add(msg.Rid(), connWrap)
 
 		enterBody := &comm.EnterBody{}

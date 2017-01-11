@@ -74,7 +74,7 @@ func TestWS(t *testing.T) {
 		}
 	}()
 
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 30)
 
 	wg.Add(1)
 	go func() {
