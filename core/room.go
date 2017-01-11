@@ -31,9 +31,8 @@ type RoomMap struct {
 
 func (roomMap *RoomMap) init() {
 	roomMap.n = conf.C.Cons.U_MAP_NUM
-	roomMap.chs = make([]chan *roomMsg, roomMap.n)
 	for i := 0; i < roomMap.n; i++ {
-		roomMap.chs[i] = make(chan *roomMsg, conf.C.Cons.ROOM_MSG_LEN)
+		roomMap.chs = append(roomMap.chs, make(chan *roomMsg, conf.C.Cons.ROOM_MSG_LEN))
 		go roomMap.proc(i)
 	}
 }
@@ -71,8 +70,7 @@ func (roomMap *RoomMap) proc(i int) {
 			}
 
 			ukey := [2]string{connWrap.Uid, connWrap.Sid}
-
-			if v, ok := rids_m[ukey]; ok && v.C != connWrap.C {
+			if v, ok := rids_m[ukey]; !ok || v.C != connWrap.C {
 				break
 			}
 
@@ -94,16 +92,16 @@ func (roomMap *RoomMap) proc(i int) {
 				break
 			}
 
-			servExt := &comm.ServExt{}
-
 			var pushExt *comm.PushExt
 			if ext := m.Ext(); ext != "" {
 				err := json.Unmarshal([]byte(ext), &pushExt)
 				if err != nil {
-					clog.Error("RoomMap:Proc() json.Unmarshal error: %v", err)
+					clog.Error("RoomMap:proc() json.Unmarshal error: %v", err)
 					break
 				}
 			}
+
+			servExt := &comm.ServExt{}
 			if pushExt != nil && pushExt.PushKind != 0 {
 				servExt.PushKind = pushExt.PushKind
 			} else if kind, ok := conf.V.Get().RoomWithPushKind[rid]; ok {

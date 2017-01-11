@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -32,8 +33,12 @@ func Fserver(host string, t comm.PROTO) {
 	for {
 		c, err := listener.AcceptTCP()
 		if err != nil {
+			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+				time.Sleep(time.Millisecond)
+				continue
+			}
 			clog.Error("Fserver() listener.AcceptTCP %v", err)
-			continue
+			os.Exit(-1)
 		}
 
 		c.SetReadBuffer(conf.C.Cons.C_RBUF)
