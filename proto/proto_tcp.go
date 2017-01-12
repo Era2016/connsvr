@@ -110,12 +110,9 @@ func (msg *MsgTcp) Encode(conn net.Conn, misc interface{}) bool {
 	data = append(data, EBYTE)
 	binary.BigEndian.PutUint16(data[1:3], uint16(len(data)))
 
-	for i := 0; i < len(data); {
-		n, err := conn.Write(data[i:])
-		if err != nil {
-			return false
-		}
-		i += n
+	_, err := conn.Write(data)
+	if err != nil {
+		return false
 	}
 
 	return true

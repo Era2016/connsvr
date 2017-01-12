@@ -45,12 +45,9 @@ func (msg *MsgHttp) Encode(conn net.Conn, misc interface{}) bool {
 		len(resp), resp,
 	))
 
-	for i := 0; i < len(resp); {
-		n, err := conn.Write(resp[i:])
-		if err != nil {
-			return false
-		}
-		i += n
+	_, err := conn.Write(resp)
+	if err != nil {
+		return false
 	}
 
 	return true
