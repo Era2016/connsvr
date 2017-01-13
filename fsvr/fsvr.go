@@ -63,17 +63,15 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	case comm.PING:
 		connWrap.Write(msg)
 	case comm.ENTER:
-		if connWrap.Uid == "" {
+		// 不同用户不能复用同一个连接, 新用户替代老用户数据
+		if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
+			for _, rid := range connWrap.Rids {
+				core.RM.Del(rid, connWrap)
+			}
+			time.Sleep(time.Millisecond)
 			connWrap.Uid = msg.Uid()
 			connWrap.Sid = msg.Sid()
-		} else {
-			// 不同用户不能复用同一个连接
-			if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
-				connWrap.Close()
-				return
-			}
 		}
-
 		core.RM.Add(msg.Rid(), connWrap)
 
 		enterBody := &comm.EnterBody{}

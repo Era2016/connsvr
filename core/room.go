@@ -115,6 +115,12 @@ func (roomMap *RoomMap) proc(i int) {
 			btime := time.Now()
 			ukey_ex := [2]string{m.Uid(), m.Sid()}
 			for ukey, connWrap := range rids_m {
+				_ukey := [2]string{connWrap.Uid, connWrap.Sid}
+				if ukey != _ukey {
+					connWrap.Close()
+					delete(rids_m, ukey)
+					continue
+				}
 				if ukey_ex[1] == "" { // 当后端没有传入sid时，只匹配uid
 					if ukey_ex[0] == ukey[0] {
 						continue
