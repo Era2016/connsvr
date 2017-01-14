@@ -48,7 +48,7 @@ func Fserver(host string, t comm.PROTO) {
 		connWrap := &core.ConnWrap{
 			T:  t,
 			C:  c,
-			BR: bufio.NewReaderSize(c, conf.C.Cons.BUF_SIZE),
+			BR: bufio.NewReaderSize(c, 128),
 		}
 		go frecv(connWrap)
 	}
