@@ -9,6 +9,7 @@ import (
 	"github.com/simplejia/connsvr/proto"
 )
 
+// ConnWrap represent a user connection's context
 type ConnWrap struct {
 	T    comm.PROTO    // 消息类型
 	C    net.Conn      // socket

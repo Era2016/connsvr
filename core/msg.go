@@ -39,6 +39,8 @@ func (a MsgList) GetLc(msg proto.Msg) (MsgList, bool) {
 	a_lc, ok := lc.Get(key_lc)
 	if a_lc != nil {
 		a = a_lc.(MsgList)
+	} else {
+		a = nil
 	}
 	return a, ok
 }
@@ -134,10 +136,10 @@ func (a MsgList) Bodys(id string, msg proto.Msg) (bodys []string) {
 		}
 		clog.Debug("MsgList:utils.Get() http success, body: %s, gpp: %v", body, gpp)
 
-		var ms comm.Msgs
+		var ms []*comm.Msg
 		err = json.Unmarshal(body, &ms)
 		if err != nil {
-			clog.Error("MsgList:json.Unmarshal() error, err: %v, body: %s, gpp: %v", err, body, gpp)
+			clog.Error("MsgList:json.Unmarshal() error, err: %v, body: %s", err, body)
 			return
 		}
 

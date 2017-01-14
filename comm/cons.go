@@ -48,8 +48,8 @@ type Stat struct {
 	Etime time.Time
 }
 
-// Msgs is from logic svr
-type Msgs []*struct {
+// Msg is from logic svr
+type Msg struct {
 	MsgId string
 	Uid   string
 	Sid   string
