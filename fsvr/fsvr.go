@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -63,16 +64,35 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 	case comm.PING:
 		connWrap.Write(msg)
 	case comm.ENTER:
+		if msg.Uid() == "" || msg.Rid() == "" {
+			break
+		}
+
 		// 不同用户不能复用同一个连接, 新用户替代老用户数据
 		if connWrap.Uid != msg.Uid() || connWrap.Sid != msg.Sid() {
 			for _, rid := range connWrap.Rids {
 				core.RM.Del(rid, connWrap)
 			}
-			time.Sleep(time.Millisecond)
 			connWrap.Uid = msg.Uid()
 			connWrap.Sid = msg.Sid()
+			connWrap.Rids = []string{msg.Rid()}
+			core.RM.Add(msg.Rid(), connWrap)
+		} else {
+			i := sort.SearchStrings(connWrap.Rids, msg.Rid())
+			if i == len(connWrap.Rids) || connWrap.Rids[i] != msg.Rid() {
+				if len(connWrap.Rids) >= conf.C.Cons.MAX_ROOM_NUM {
+					msg.SetCmd(comm.ERR)
+					connWrap.Write(msg)
+					break
+				}
+				if i == len(connWrap.Rids) {
+					connWrap.Rids = append(connWrap.Rids, msg.Rid())
+				} else {
+					connWrap.Rids = append(connWrap.Rids[:i], append([]string{msg.Rid()}, connWrap.Rids[i:]...)...)
+				}
+				core.RM.Add(msg.Rid(), connWrap)
+			}
 		}
-		core.RM.Add(msg.Rid(), connWrap)
 
 		enterBody := &comm.EnterBody{}
 		if body := msg.Body(); body != "" {
@@ -99,6 +119,14 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 			connWrap.Write(msg)
 		}
 	case comm.LEAVE:
+		if msg.Uid() == "" || msg.Rid() == "" {
+			break
+		}
+
+		i := sort.SearchStrings(connWrap.Rids, msg.Rid())
+		if i < len(connWrap.Rids) && connWrap.Rids[i] == msg.Rid() {
+			connWrap.Rids = append(connWrap.Rids[:i], connWrap.Rids[i+1:]...)
+		}
 		core.RM.Del(msg.Rid(), connWrap)
 	case comm.PUB:
 		subcmd := strconv.Itoa(int(msg.Subcmd()))
@@ -176,7 +204,6 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 
 		if step == maxstep {
 			msg.SetCmd(comm.ERR)
-			msg.SetBody("")
 		} else {
 			msg.SetBody(string(body))
 		}

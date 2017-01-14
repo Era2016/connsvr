@@ -21,6 +21,8 @@ const (
 type roomMsg struct {
 	cmd  int
 	rid  string
+	uid  string
+	sid  string
 	body interface{}
 }
 
@@ -31,8 +33,9 @@ type RoomMap struct {
 
 func (roomMap *RoomMap) init() {
 	roomMap.n = conf.C.Cons.U_MAP_NUM
+	roomMap.chs = make([]chan *roomMsg, roomMap.n)
 	for i := 0; i < roomMap.n; i++ {
-		roomMap.chs = append(roomMap.chs, make(chan *roomMsg, conf.C.Cons.ROOM_MSG_LEN))
+		roomMap.chs[i] = make(chan *roomMsg, conf.C.Cons.ROOM_MSG_LEN)
 		go roomMap.proc(i)
 	}
 }
@@ -45,54 +48,41 @@ func (roomMap *RoomMap) proc(i int) {
 		switch msg.cmd {
 		case ADD:
 			rid := msg.rid
-			connWrap := msg.body.(*ConnWrap)
-			rids_m, ok := data[rid]
+			users, ok := data[rid]
 			if !ok {
-				rids_m = map[[2]string]*ConnWrap{}
-				data[rid] = rids_m
+				users = map[[2]string]*ConnWrap{}
+				data[rid] = users
 			}
-			connWrap.Rids = append(connWrap.Rids, rid)
-			for _, _rid := range connWrap.Rids[:len(connWrap.Rids)-1] {
-				if _rid == rid {
-					connWrap.Rids = connWrap.Rids[:len(connWrap.Rids)-1]
-					break
-				}
+			ukey := [2]string{msg.uid, msg.sid}
+			if v, ok := users[ukey]; ok && v.C != msg.body.(*ConnWrap).C {
+				// TODO
+				// multi add, you can close old conn
 			}
-
-			ukey := [2]string{connWrap.Uid, connWrap.Sid}
-			rids_m[ukey] = connWrap
+			users[ukey] = msg.body.(*ConnWrap)
 		case DEL:
 			rid := msg.rid
-			connWrap := msg.body.(*ConnWrap)
-			rids_m, ok := data[rid]
+			users, ok := data[rid]
 			if !ok {
 				break
 			}
-
-			ukey := [2]string{connWrap.Uid, connWrap.Sid}
-			if v, ok := rids_m[ukey]; !ok || v.C != connWrap.C {
+			ukey := [2]string{msg.uid, msg.sid}
+			if v, ok := users[ukey]; !ok || v.C != msg.body.(*ConnWrap).C {
 				break
 			}
 
-			delete(rids_m, ukey)
-			if len(rids_m) == 0 {
+			delete(users, ukey)
+			if len(users) == 0 {
 				delete(data, rid)
-			}
-			for i, _rid := range connWrap.Rids {
-				if _rid == rid {
-					connWrap.Rids = append(connWrap.Rids[:i], connWrap.Rids[i+1:]...)
-					break
-				}
 			}
 		case PUSH:
 			rid := msg.rid
-			m := msg.body.(proto.Msg)
-			rids_m, ok := data[rid]
-			if !ok || len(rids_m) == 0 {
+			users, _ := data[rid]
+			if len(users) == 0 {
 				break
 			}
 
 			var pushExt *comm.PushExt
+			m := msg.body.(proto.Msg)
 			if ext := m.Ext(); ext != "" {
 				err := json.Unmarshal([]byte(ext), &pushExt)
 				if err != nil {
@@ -110,23 +100,16 @@ func (roomMap *RoomMap) proc(i int) {
 				servExt.PushKind = conf.V.Get().PushKind
 			}
 
-			servExt_bs, _ := json.Marshal(servExt)
-
+			servExtBs, _ := json.Marshal(servExt)
+			ukeyEx := [2]string{m.Uid(), m.Sid()}
 			btime := time.Now()
-			ukey_ex := [2]string{m.Uid(), m.Sid()}
-			for ukey, connWrap := range rids_m {
-				_ukey := [2]string{connWrap.Uid, connWrap.Sid}
-				if ukey != _ukey {
-					connWrap.Close()
-					delete(rids_m, ukey)
-					continue
-				}
-				if ukey_ex[1] == "" { // 当后端没有传入sid时，只匹配uid
-					if ukey_ex[0] == ukey[0] {
+			for ukey, connWrap := range users {
+				if ukeyEx[1] == "" { // 当后端没有传入sid时，只匹配uid
+					if ukeyEx[0] == ukey[0] {
 						continue
 					}
 				} else {
-					if ukey_ex == ukey {
+					if ukeyEx == ukey {
 						continue
 					}
 				}
@@ -141,7 +124,7 @@ func (roomMap *RoomMap) proc(i int) {
 					msg.SetBody(m.Body())
 				}
 
-				msg.SetExt(string(servExt_bs))
+				msg.SetExt(string(servExtBs))
 				connWrap.Write(msg)
 			}
 			etime := time.Now()
@@ -150,7 +133,7 @@ func (roomMap *RoomMap) proc(i int) {
 				N:     i,
 				Rid:   rid,
 				Msg:   fmt.Sprintf("%+v", m),
-				Num:   len(rids_m),
+				Num:   len(users),
 				Btime: btime,
 				Etime: etime,
 			})
@@ -170,7 +153,7 @@ func (roomMap *RoomMap) Add(rid string, connWrap *ConnWrap) {
 
 	i := utils.Hash33(connWrap.Uid) % roomMap.n
 	select {
-	case roomMap.chs[i] <- &roomMsg{cmd: ADD, rid: rid, body: connWrap}:
+	case roomMap.chs[i] <- &roomMsg{cmd: ADD, rid: rid, uid: connWrap.Uid, sid: connWrap.Sid, body: connWrap}:
 	default:
 		clog.Error("RoomMap:Add() chan full")
 	}
@@ -185,7 +168,7 @@ func (roomMap *RoomMap) Del(rid string, connWrap *ConnWrap) {
 
 	i := utils.Hash33(connWrap.Uid) % roomMap.n
 	select {
-	case roomMap.chs[i] <- &roomMsg{cmd: DEL, rid: rid, body: connWrap}:
+	case roomMap.chs[i] <- &roomMsg{cmd: DEL, rid: rid, uid: connWrap.Uid, sid: connWrap.Sid, body: connWrap}:
 	default:
 		clog.Error("RoomMap:Del() chan full")
 	}
