@@ -52,7 +52,7 @@ func ConnReportHandler(cate, subcate, body string, params map[string]interface{}
 
 	addr, err := ConnRedisAddrFunc(connRedisAddr.AddrType, connRedisAddr.Addr)
 	if err != nil {
-		clog.Error("ConnPushHandler() ConnRedisAddrFunc error: %v", err)
+		clog.Error("ConnReportHandler() ConnRedisAddrFunc error: %v", err)
 		return
 	}
 

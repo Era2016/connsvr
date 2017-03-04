@@ -1,11 +1,10 @@
-package tests
+package test
 
 import (
 	"encoding/json"
 	"fmt"
 	"strconv"
 
-	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 	"github.com/simplejia/utils"

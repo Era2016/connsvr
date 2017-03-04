@@ -1,4 +1,4 @@
-package tests
+package test
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/simplejia/connsvr"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 	"github.com/simplejia/utils"

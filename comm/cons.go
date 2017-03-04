@@ -7,7 +7,7 @@ import "time"
 type CMD byte
 
 const (
-	PING CMD = iota + 1 // 1, 现在的技术方案用不到心跳
+	PING CMD = iota + 1 // 1
 	ENTER
 	LEAVE
 	PUB
