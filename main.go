@@ -7,18 +7,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/bsvr"
-	_ "github.com/simplejia/connsvr/clog"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 	"github.com/simplejia/connsvr/fsvr"
 	"github.com/simplejia/lc"
+	"github.com/simplejia/namecli/api"
 	"github.com/simplejia/utils"
 )
 
 func init() {
 	lc.Init(1e5)
+
+	clog.AddrFunc = func() (string, error) {
+		return api.Name("clog.srv.ns")
+	}
+	clog.Init(conf.C.Clog.Name, "", conf.C.Clog.Level, conf.C.Clog.Mode)
 
 	// 定期上报，用于后端维护connsvr服务器列表
 	go func() {

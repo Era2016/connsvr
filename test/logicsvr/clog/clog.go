@@ -1,7 +1,7 @@
 package clog
 
 import (
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/test/logicsvr/conf"
 )
 

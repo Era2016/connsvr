@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/comm"
 
 	"fmt"

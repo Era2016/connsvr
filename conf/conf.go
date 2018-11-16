@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/utils"
 )

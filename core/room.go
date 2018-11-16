@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/conf"
 	"github.com/simplejia/connsvr/proto"

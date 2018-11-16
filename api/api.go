@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/comm"
 )
 

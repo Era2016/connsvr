@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/lc"
 
 	"net/http"

@@ -3,7 +3,7 @@ package bsvr
 import (
 	"net/http"
 
-	"github.com/simplejia/clog"
+	"github.com/simplejia/clog/api"
 	"github.com/simplejia/connsvr/comm"
 	"github.com/simplejia/connsvr/core"
 	"github.com/simplejia/connsvr/proto"
