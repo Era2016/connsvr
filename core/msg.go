@@ -34,20 +34,18 @@ func (a MsgList) Key4Lc(msg proto.Msg) string {
 	return fmt.Sprintf("conn:msgs:%v:%v", msg.Rid(), msg.Subcmd())
 }
 
-func (a MsgList) GetLc(msg proto.Msg) (MsgList, bool) {
+func (a MsgList) GetLc(msg proto.Msg) (aRet MsgList, ok bool) {
 	key_lc := a.Key4Lc(msg)
 	a_lc, ok := lc.Get(key_lc)
 	if a_lc != nil {
-		a = a_lc.(MsgList)
-	} else {
-		a = nil
+		aRet = a_lc.(MsgList)
 	}
-	return a, ok
+	return
 }
 
 func (a MsgList) SetLc(msg proto.Msg) {
 	key_lc := a.Key4Lc(msg)
-	lc.Set(key_lc, a, time.Minute)
+	lc.Set(key_lc, a, time.Second)
 }
 
 func (a MsgList) Append(id string, msg proto.Msg) MsgList {
@@ -68,7 +66,7 @@ func (a MsgList) Append(id string, msg proto.Msg) MsgList {
 		a = append(a[:i], append([]*MsgElem{x}, a[i:]...)...)
 	}
 
-	n := conf.V.Get().MsgNum
+	n := conf.C.Vars.MsgNum
 	if len(a) > n {
 		copy(a, a[len(a)-n:])
 		a = a[:n]

@@ -2,7 +2,9 @@
 
 package comm
 
-import "syscall"
+import (
+	"syscall"
+)
 
 func GetRlimitFile() uint64 {
 	var rLimit syscall.Rlimit

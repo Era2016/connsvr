@@ -218,6 +218,8 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 			}
 		}
 
+		subcmdOrig := msg.Subcmd()
+
 		mixBodys := map[byte][]string{}
 		for subcmd, msgId := range msgsBody.MsgIds {
 			msg.SetSubcmd(subcmd)
@@ -229,6 +231,7 @@ func dispatchCmd(connWrap *core.ConnWrap, msg proto.Msg) {
 
 		bs, _ := json.Marshal(mixBodys)
 		msg.SetBody(string(bs))
+		msg.SetSubcmd(subcmdOrig)
 		connWrap.Write(msg)
 	default:
 		clog.Warn("fsvr:dispatchCmd() unexpected cmd: %v", msg.Cmd())

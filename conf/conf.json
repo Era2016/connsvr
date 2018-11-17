@@ -1,102 +1,4 @@
 {
-    "dev": {
-        "app": {
-            "name": "connsvr",
-            "tport": 44391,
-            "hport": 44392,
-            "wport": 44393,
-            "bport": 44394
-        },
-        "cons": {
-            "max_room_num": 10, // 一个用户最多加入的房间数
-            "u_map_num": 300, // 用户分组hash
-            "room_msg_len": 10000, // 房间消息队列长度
-            "c_rbuf": 128, // 读缓冲区大小
-            "c_wbuf": 1024 // 写缓冲区大小，越小，越可能写超时
-        },
-        "varhost": { // 定时获取远程服务器最新配置，用于参数动态变更
-            "addr": "127.0.0.1:8089",
-            "addrType": "ip",
-            "host": "logicsvr.com",
-            "cgi": "/Demo/Var"
-        },
-        "pubs": {
-            "1": {
-                "addr": "127.0.0.1:8089",
-                "addrType": "ip",
-                "host": "logicsvr.com",
-                "cgi": "/Demo/Pub",
-                "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s&body=%s",
-                "method": "post",
-                "retry": 0,
-                "timeout": "50ms"
-            }
-        },
-        "msgs": {
-            "1": {
-                "addr": "127.0.0.1:8089",
-                "addrType": "ip",
-                "host": "logicsvr.com",
-                "cgi": "/Demo/Msgs",
-                "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
-                "timeout": "80ms"
-            }
-        },
-        "clog": {
-            "name":"connsvr",
-            "mode": 3, // 0: none, 1: localfile, 2: clog (数字代表bit位)
-            "level": 15 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
-        }
-    },
-    "test": {
-        "app": {
-            "name": "connsvr",
-            "tport": 44391,
-            "hport": 44392,
-            "wport": 44393,
-            "bport": 44394
-        },
-        "cons": {
-            "max_room_num": 10, // 一个用户最多加入的房间数
-            "u_map_num": 300, // 用户分组hash
-            "room_msg_len": 10000, // 房间消息队列长度
-            "c_rbuf": 128, // 读缓冲区大小
-            "c_wbuf": 1024 // 写缓冲区大小，越小，越可能写超时
-        },
-        "varhost": {
-            "addr": "127.0.0.1:8089",
-            "addrType": "ip",
-            "host": "logicsvr.com",
-            "cgi": "/Demo/Var"
-        },
-        "pubs": {
-            "1": {
-                "addr": "127.0.0.1:8089",
-                "addrType": "ip",
-                "host": "logicsvr.com",
-                "cgi": "/Demo/Pub",
-                "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s&body=%s",
-                "method": "post",
-                "retry": 0,
-                "timeout": "50ms"
-            }
-        },
-        "msgs": {
-            "1": {
-                "addr": "127.0.0.1:8089",
-                "addrType": "ip",
-                "host": "logicsvr.com",
-                "cgi": "/Demo/Msgs",
-                "params": "cmd=%s&subcmd=%s&uid=%s&sid=%s&rid=%s",
-                "timeout": "80ms"
-            }
-        },
-        "clog": {
-            "name":"connsvr",
-            "mode": 3, // 0: none, 1: localfile, 2: clog (数字代表bit位)
-            "level": 15 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
-        }
-    },
     "prod": {
         "app": {
             "name": "connsvr",
@@ -112,11 +14,10 @@
             "c_rbuf": 128, // 读缓冲区大小
             "c_wbuf": 1024 // 写缓冲区大小，越小，越可能写超时
         },
-        "varhost": {
-            "addr": "127.0.0.1:8089",
-            "addrType": "ip",
-            "host": "logicsvr.com",
-            "cgi": "/Demo/Var"
+        "vars": {
+            "pushKind": 2, // 消息推送方式
+            "roomWithPushKind": {}, // 消息推送方式, 房间单独配置
+            "msgNum": 20 // connsvr服务缓存消息最大长度
         },
         "pubs": {
             "1": {
@@ -141,9 +42,8 @@
             }
         },
         "clog": {
-            "name":"connsvr",
-            "mode": 2, // 0: none, 1: localfile, 2: clog (数字代表bit位)
-            "level": 14 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
+            "mode": 1, // 0: none, 1: localfile, 2: clog (数字代表bit位)
+            "level": 15 // 0: none, 1: debug, 2: warn 4: error 8: info (数字代表bit位)
         }
     }
 }

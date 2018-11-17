@@ -94,10 +94,10 @@ func (roomMap *RoomMap) proc(i int) {
 			servExt := &comm.ServExt{}
 			if pushExt != nil && pushExt.PushKind != 0 {
 				servExt.PushKind = pushExt.PushKind
-			} else if kind, ok := conf.V.Get().RoomWithPushKind[rid]; ok {
+			} else if kind, ok := conf.C.Vars.RoomWithPushKind[rid]; ok {
 				servExt.PushKind = kind
 			} else {
-				servExt.PushKind = conf.V.Get().PushKind
+				servExt.PushKind = conf.C.Vars.PushKind
 			}
 
 			servExtBs, _ := json.Marshal(servExt)
@@ -176,18 +176,6 @@ func (roomMap *RoomMap) Del(rid string, connWrap *ConnWrap) {
 
 func (roomMap *RoomMap) Push(msg proto.Msg) {
 	clog.Info("RoomMap:Push() %+v", msg)
-
-	var pushExt *comm.PushExt
-	if ext := msg.Ext(); ext != "" {
-		err := json.Unmarshal([]byte(ext), &pushExt)
-		if err != nil {
-			clog.Error("RoomMap:Push() json.Unmarshal error: %v", err)
-			return
-		}
-	}
-	if pushExt != nil {
-		ML.Append(pushExt.MsgId, msg)
-	}
 
 	for _, ch := range roomMap.chs {
 		select {

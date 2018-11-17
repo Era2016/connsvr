@@ -63,7 +63,6 @@ type ServExt struct {
 
 // PushExt is from backend
 type PushExt struct {
-	MsgId    string
 	PushKind PUSH_KIND
 }
 

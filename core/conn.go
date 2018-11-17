@@ -22,7 +22,7 @@ type ConnWrap struct {
 
 // return false will close the conn
 func (connWrap *ConnWrap) Read() proto.Msg {
-	connWrap.C.SetReadDeadline(time.Now().Add(time.Hour))
+	connWrap.C.SetReadDeadline(time.Now().Add(time.Minute))
 
 	msg := proto.NewMsg(connWrap.T)
 	ok := msg.Decode(connWrap.BR, connWrap.C, &connWrap.Misc)

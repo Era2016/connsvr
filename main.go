@@ -23,7 +23,7 @@ func init() {
 	clog.AddrFunc = func() (string, error) {
 		return api.Name("clog.srv.ns")
 	}
-	clog.Init(conf.C.Clog.Name, "", conf.C.Clog.Level, conf.C.Clog.Mode)
+	clog.Init(conf.C.App.Name, "", conf.C.Clog.Level, conf.C.Clog.Mode)
 
 	// 定期上报，用于后端维护connsvr服务器列表
 	go func() {
