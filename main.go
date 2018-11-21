@@ -38,7 +38,7 @@ func init() {
 }
 
 func main() {
-	clog.Info("main() ulimit_nofile: %d", comm.GetRlimitFile())
+	clog.Info("main")
 
 	go fsvr.Fserver(fmt.Sprintf("%s:%d", "0.0.0.0", conf.C.App.Tport), comm.TCP)
 
